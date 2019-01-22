@@ -2,7 +2,7 @@
     <div class="app-wrap" v-auto-height data-key="app-wrap">
         <div class="app-header">
             <div class="fl pl5px">
-                <i class="icon-font icon-shujujianmo"></i>
+                <i class="logo"></i>
                 D2M
             </div>
 
@@ -122,12 +122,15 @@
         user-select:none;
         -webkit-app-region: drag;
     }
-    .app-header .icon-shujujianmo{
-        font-size: 18px;
+    .app-header .logo{
+        display: inline-block;
+        width: 16px;
+        height: 16px;
         vertical-align: sub;
-        position: relative;
-        top: -1px;
-        color: #0075c2;
+        background-image: url("../../icon/icon.png");
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: contain;
     }
     .app-header .btn{
         border: none;
