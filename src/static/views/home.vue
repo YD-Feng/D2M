@@ -41,7 +41,7 @@
 
         <div class="contain">
             <div class="logo">
-                <i class="icon-font icon-shujujianmo"></i>
+                <i class="icon"></i>
                 <p class="pt20px fBold f18px">D2M</p>
                 <p class="pt5px f14px cm-text-light">Data to Model</p>
             </div>
@@ -387,9 +387,15 @@
         text-align: center;
         padding-top: 100px;
     }
-    .home-page .logo .icon-font{
-        font-size: 100px;
-        color: #0075c2;
+    .home-page .logo .icon{
+        display: block;
+        width: 100px;
+        height: 100px;
+        margin: 0 auto;
+        background-image: url("../../icon/icon.png");
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: contain;
     }
     .home-page .action{
         padding-top: 40px;
