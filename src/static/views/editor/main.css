@@ -1,0 +1,383 @@
+.editor-page{
+    position: relative;
+    padding-top: 31px;
+    padding-left: 21px;
+    height: 100%;
+}
+.editor-page-side-bar-open{
+    padding-left: 230px;
+}
+.editor-page-tool-bar{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 31px;
+    overflow: hidden;
+    background-color: #f2f2f2;
+    border-bottom: 1px solid #9b9b9b;
+    color: #333333;
+    font-size: 0;
+}
+.editor-page-tool-bar .btn{
+    border: none;
+    background: transparent;
+    padding: 0 8px;
+    height: 30px;
+    color: #333333;
+    border-radius: 0;
+    margin-left: 0;
+    font-size: 12px;
+}
+.editor-page-tool-bar .btn:hover{
+    background: rgba(0, 0, 0, 0.1);
+    color: #0075c2;
+}
+.editor-page-tool-bar .icon-font{
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+    font-size: 14px;
+    vertical-align: text-bottom;
+}
+.editor-page-tool-bar .el-select{
+    margin-top: 3px;
+    margin-right: 8px;
+    line-height: 18px;
+}
+.editor-page-tool-bar .el-select .el-input__inner{
+    height: 24px;
+    padding: 3px 4px;
+}
+.editor-page-tool-bar .el-select .el-select__caret{
+    font-size: 10px;
+}
+.editor-page-side-bar{
+    position: absolute;
+    top: 31px;
+    left: 0;
+    bottom: 0;
+    padding: 23px 0 0 21px;
+}
+.editor-page-side-bar-open .editor-page-side-bar{
+    width: 230px;
+    border-right: 1px solid #9b9b9b;
+}
+.editor-page-side-bar .tab-list{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 21px;
+    height: 100%;
+    background-color: #f2f2f2;
+    border-right: 1px solid #9b9b9b;
+    color: #333333;
+}
+.editor-page-side-bar .tab-list .item{
+    width: 20px;
+    text-align: center;
+    padding: 15px 0;
+    font-size: 0;
+    cursor: pointer;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+.editor-page-side-bar .tab-list .item:hover{
+    background-color: #e3e3e3;
+}
+.editor-page-side-bar .tab-list .item.active{
+    background-color: #d4d4d4;
+    cursor: default;
+}
+.editor-page-side-bar .tab-list .icon-font{
+    margin-bottom: 5px;
+    display: inline-block;
+}
+.editor-page-side-bar .tab-list .item:nth-child(1) .icon-font{
+    color: #b2371d;
+}
+.editor-page-side-bar .tab-list .item:nth-child(2) .icon-font{
+    color: #e7a219;
+}
+.editor-page-side-bar .tab-list .item:nth-child(3) .icon-font{
+    color: #b258e7;
+}
+.editor-page-side-bar .title{
+    position: absolute;
+    left: 21px;
+    right: 0;
+    top: 0;
+    padding-left: 3px;
+    height: 23px;
+    line-height: 22px;
+    overflow: hidden;
+    background-color: #f2f2f2;
+    border-bottom: 1px solid #9b9b9b;
+    color: #333333;
+    overflow: hidden;
+}
+.editor-page-side-bar .icon-shouqi{
+    font-size: 14px;
+    cursor: pointer;
+    display: block;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    margin: 1px;
+}
+.editor-page-side-bar .cont{
+    width: 100%;
+    height: 100%;
+}
+.editor-page-contain{
+    height: 100%;
+    position: relative;
+}
+.editor-page-contain.has-tab-list{
+    padding-top: 23px;
+}
+.editor-page-contain .tab-list{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 23px;
+    background-color: #f2f2f2;
+    border-bottom: 1px solid #9b9b9b;
+    color: #333333;
+    overflow: hidden;
+}
+.editor-page-contain .tab-list .item{
+    float: left;
+    padding: 0 20px 0 6px;
+    height: 22px;
+    line-height: 22px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border-left: 1px solid #9b9b9b;
+    border-right: 1px solid #9b9b9b;
+    margin-left: -1px;
+    position: relative;
+    background-color: #d4d4d4;
+    cursor: pointer;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+.editor-page-contain .tab-list .active{
+    background-color: #ffffff;
+    cursor: default;
+}
+.editor-page-contain .tab-list .icon-font{
+    font-size: 14px;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+}
+.editor-page-contain .tab-list .icon-color-pink{
+    color: #d68fcb;
+}
+.editor-page-contain .tab-list .icon-color-pink-green-z{
+    color: #2fb4ae;
+}
+.editor-page-contain .tab-list .icon-guanbi{
+    font-size: 8px;
+    cursor: pointer;
+    color: #aaaaaa;
+    position: absolute;
+    right: 5px;
+    top: 0;
+}
+.editor-page-contain .tab-list .icon-guanbi:hover{
+    color: #000000;
+}
+.editor-page-contain .win{
+    width: 100%;
+    height: 100%;
+    background-color: #ffffff;
+}
+.editor-page-context-menu{
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 5;
+    width: 200px;
+    background-color: #f2f2f2;
+    border: 1px solid #9b9b9b;
+    color: #000000;
+}
+.editor-page-context-menu .menu-list{
+    overflow: hidden;
+}
+.editor-page-context-menu .menu-list .item{
+    overflow: hidden;
+    height: 30px;
+    line-height: 30px;
+    padding: 0 10px;
+    cursor: pointer;
+}
+.editor-page-context-menu .menu-list .item:hover{
+    background-color: #0075c2;
+    color: #ffffff;
+}
+.editor-page-context-menu .menu-list .item:hover .fr{
+    color: #c7c7c7
+}
+.editor-page-context-menu .menu-list .item-disabled{
+    color: #bebebe;
+    cursor: default;
+}
+.editor-page-context-menu .menu-list .item-disabled .fr{
+    color: #d0d0d0;
+}
+.editor-page-context-menu .menu-list .item-disabled:hover{
+    background-color: #f2f2f2;
+    color: #bebebe;
+}
+.editor-page-context-menu .menu-list .item-disabled:hover .fr{
+    color: #d0d0d0
+}
+
+.editor-page .el-tree, .editor-page .el-tree-node, .editor-page .el-tree-node__content{
+    width: fit-content;
+    min-width: 100%;
+}
+.editor-page .el-tree-node__content{
+    height: 24px;
+    display: block;
+}
+.editor-page .el-tree-node:focus>.el-tree-node__content{
+    background-color: #d3d2d6;
+}
+.editor-page .el-tree-node__content .icon-font{
+    font-size: 14px;
+    margin-right: 2px;
+    vertical-align: middle;
+}
+.editor-page .el-tree-node__children, .editor-page .el-tree-node__expand-icon{
+    transition: none !important;
+}
+.editor-page .custom-tree-node{
+    display: inline-block;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+.editor-page .el-tree__empty-block{
+    width: 208px;
+}
+
+.version-step-wrap{
+    padding: 0 10px;
+}
+.version-step-wrap .step{
+    padding: 10px 0;
+}
+.version-step-wrap .step-item{
+    min-height: 100px;
+    overflow: hidden;
+    position: relative;
+}
+.version-step-wrap .step-line{
+    position: absolute;
+    z-index: 1;
+    left: 9px;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    background-color: #3753a3;
+}
+.version-step-wrap .step-item:first-child .step-line{
+    top: 2px;
+}
+.version-step-wrap .step-item:last-child .step-line{
+    height: 10px;
+}
+.version-step-wrap .step-icon{
+    position: absolute;
+    z-index: 2;
+    top: 2px;
+    left: 0;
+    width: 20px;
+    height: 19px;
+    line-height: 19px;
+    text-align: center;
+    background-color: #f2f2f2;
+    color: #3753a3;
+    border-radius: 50%;
+    font-size: 19px;
+}
+.version-step-wrap .step-cont{
+    padding: 0 10px 20px 30px;
+}
+.version-step-wrap .step-title{
+    color: #333333;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 24px;
+}
+.version-step-wrap .step-time{
+    font-size: 12px;
+    padding-top: 4px;
+    color: #6b6b6b;
+}
+.version-step-wrap .step-description{
+    background-color: #e0e0e0;
+    color: #999999;
+    padding: 3px 6px;
+    line-height: 22px;
+    border-radius: 4px;
+    margin-top: 5px;
+}
+
+.version-compare-wrap{
+    overflow: hidden;
+    padding: 30px;
+    background-color: #f2f2f2;
+    border: 1px solid #808080;
+}
+.version-compare-wrap .msg-wrap{
+    float: left;
+    width: 320px;
+}
+.version-compare-wrap .msg-wrap .msg{
+    border: 1px solid #c6c6c6;
+    background: #ffffff;
+    margin-top: 5px;
+    overflow: auto;
+}
+.version-compare-wrap .code-wrap{
+    margin-left: 350px;
+    padding-left: 30px;
+    border-left: 1px solid #e2e2e2;
+}
+.version-compare-wrap .code-wrap .code{
+    border: 1px solid #c6c6c6;
+    background: #ffffff;
+    margin-top: 5px;
+    overflow: auto;
+}
+.version-compare-wrap .code-wrap .code .pre{
+    width: fit-content;
+    margin: 0;
+    padding: 5px;
+    line-height: 2;
+    font-family: sans-serif;
+}
+
+.editor-page-dialog-350px{
+    width: 350px;
+}
+.editor-page-dialog-430px{
+    width: 430px;
+}
+.editor-page-confirm-box{
+    width: 400px;
+}
+.editor-page-confirm-box .el-message-box__btns .el-button{
+    width: 110px;
+}

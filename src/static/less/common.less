@@ -1,0 +1,486 @@
+@import "modules/reset";
+@import "modules/public";
+@import (inline) "modules/iconfont.css";
+//模拟滚动条样式
+@import (inline) "modules/vue-bar.css";
+
+html,body{
+    background: #ffffff;
+    font-size: 12px;
+}
+
+//element reset
+.custom-style{
+    .el-button{
+        padding: 8px 10px;
+        font-size: 12px;
+        border-radius: 4px;
+        vertical-align: middle;
+        border: 1px solid #caccd3;
+    }
+    .el-button--small{
+        padding: 5px 5px;
+    }
+    .el-button--mini{
+        padding: 4px;
+        font-size: 12px;
+        border-radius: 4px;
+    }
+    .el-button--text{
+        -webkit-appearance: none;
+        -moz-user-select: text;
+        -webkit-user-select: text;
+        -ms-user-select: text;
+        border: none;
+    }
+    .el-button--info{
+        background-color: #0ebbff;
+        border-color: #0ebbff;
+    }
+    .el-button.is-disabled{
+        border-color: #ebeef5;
+    }
+
+    .el-radio__label{
+        font-size: 12px;
+    }
+    .el-radio__inner{
+        width: 14px;
+        height: 14px;
+        &:after{
+            width: 5px;
+            height: 5px;
+        }
+    }
+
+    .el-checkbox__label{
+        font-size: 12px;
+    }
+    .el-checkbox__inner{
+        width: 14px;
+        height: 14px;
+        border: 1px solid #caccd3;
+        &:after{
+            left: 4px;
+            top: 1px;
+        }
+    }
+
+    .el-input__inner{
+        height: 30px;
+        padding: 6px 4px;
+        font-size: 12px;
+        border: 1px solid #caccd3;
+    }
+    .el-textarea__inner{
+        resize: none;
+        padding: 6px 4px;
+        border: 1px solid #caccd3;
+    }
+    .el-input.error .el-input__inner{
+        border-color: #e20000;
+    }
+    .el-input.is-error .el-input__inner{
+        border-color: #e20000;
+        color: #e20000;
+    }
+
+    .el-input--prefix .el-input__inner{
+        padding-left: 26px;
+    }
+    .el-input--prefix .el-input__icon{
+        line-height: 1;
+        width: 24px;
+    }
+    .el-input__prefix{
+        left: 2px;
+    }
+    .el-input--suffix .el-input__inner{
+        padding-right: 26px;
+    }
+    .el-input--suffix .el-input__icon{
+        line-height: 1;
+        width: 24px;
+    }
+    .el-input__suffix{
+        right: 2px;
+    }
+
+    .el-input__icon{
+        width: 28px;
+    }
+    .el-input .el-select{
+        min-width: 110px;
+    }
+
+    .el-input-group__append, .el-input-group__prepend{
+        background-color: #f5f5f5;
+        border-color: #caccd3;
+    }
+
+    .el-date-editor .el-range-separator{
+        position: relative;
+        top: -1px;
+        width: auto;
+    }
+    .el-date-editor .el-range__close-icon{
+        position: relative;
+        right: -3px;
+    }
+    .el-date-editor .el-range__icon, .el-date-editor .el-range-separator, .el-date-editor .el-range__close-icon{
+        line-height: 16px;
+    }
+    .el-date-editor .el-range-input{
+        font-size: 12px;
+    }
+    .el-date-editor.el-input--prefix .el-input__inner{
+        padding-left: 4px;
+    }
+    .el-date-editor.el-input--prefix .el-input__prefix{
+        left: auto;
+        right: 2px;
+    }
+    .el-date-editor .el-input__suffix-inner{
+        background-color: #ffffff;
+    }
+
+    .el-input-number__decrease, .el-input-number__increase{
+        line-height: 28px;
+        top: 1px;
+        .el-icon-minus, .el-icon-plus{
+            vertical-align: middle;
+        }
+    }
+
+    .el-textarea__inner{
+        font-size: 12px;
+    }
+
+    .el-select{
+        line-height: 26px;
+    }
+    .el-input__suffix{
+        right: 2px;
+    }
+    .el-select .el-input__icon+.el-input__inner{
+        padding-right: 28px;
+    }
+    .el-select-dropdown{
+        margin: 1px 0;
+    }
+    .el-select-dropdown__list{
+        padding: 0;
+    }
+    .el-select-dropdown__item{
+        padding: 0 5px;
+        height: 30px;
+        line-height: 30px;
+        font-size: 12px;
+    }
+    .el-select .el-tag{
+        height: 20px;
+        line-height: 20px;
+        margin: 1px 0 1px 4px;
+    }
+    .el-popper .popper__arrow{
+        display: none;
+    }
+
+    .el-dropdown .el-icon-caret-bottom{
+        transform: scale(0.8);
+    }
+    .el-dropdown-menu{
+        margin: 1px 0;
+        padding: 0;
+    }
+
+    .el-cascader{
+        line-height: 28px;
+    }
+    .el-cascader__label{
+        font-size: 12px;
+        line-height: 28px;
+    }
+    .el-cascader .el-input .el-input__icon{
+        font-size: 12px;
+        line-height: 34px;
+        overflow: hidden;
+        transform: scale(0.8);
+        &.is-reverse{
+            transform: rotateZ(180deg) scale(0.8);
+        }
+    }
+    .el-cascader-menus{
+        margin: 1px 0;
+        overflow: hidden;
+    }
+    .el-cascader-menu{
+        padding: 0;
+    }
+    .el-cascader-menu__item{
+        padding: 0 30px 0 10px;
+        height: 30px;
+        line-height: 30px;
+        font-size: 12px;
+    }
+
+    .el-date-editor .el-input__icon+.el-input__inner{
+        padding-right: 30px;
+    }
+    .el-time-panel__content::after, .el-time-panel__content::before{
+        margin-top: -7px;
+    }
+
+    .el-upload--picture-card i{
+        vertical-align: middle;
+    }
+
+    .el-form-item.is-error{
+        margin-bottom: 42px;
+    }
+    .el-form-item__label{
+        font-size: 12px;
+        line-height: 24px;
+        padding: 4px 12px 4px 0;
+    }
+    .el-form-item__content{
+        line-height: 28px;
+        font-size: 12px;
+    }
+
+    .el-table{
+        font-size: 12px;
+    }
+    .el-table .el-button--text{
+        padding: 8px 5px;
+    }
+    .el-table .el-button--small{
+        padding: 5px 5px;
+    }
+    .el-table .el-button+.el-button{
+        margin-left: 5px;
+    }
+    .el-table thead{
+        color: #666666;
+    }
+    .el-table th{
+        font-weight: bold;
+        background-color: #dcdcdc;
+    }
+    .el-table--border, .el-table--group, .el-table--border td, .el-table--border th{
+        border-color: #c1c1c1;
+    }
+    .el-table::before,
+    .el-table::after,
+    .el-table__fixed-right::before,
+    .el-table__fixed-left::before,
+    .el-table__fixed::before{
+        background-color: #c1c1c1;
+    }
+    .el-table .el-table-column--selection .cell{
+        padding-left: 4px;
+        padding-right: 4px;
+    }
+
+    .el-pagination button, .el-pagination span{
+        font-size: 12px;
+    }
+    .el-pagination__editor{
+        vertical-align: baseline;
+    }
+
+    .el-menu{
+        background-color: #e7eaef;
+    }
+    .el-submenu .el-menu{
+        background-color: #e0e2e7;
+    }
+    .el-menu-item, .el-submenu__title{
+        height: 40px;
+        line-height: 40px;
+        font-size: 12px;
+        color: #48576a;
+    }
+    .el-menu-item.is-active {
+        color: #20a0ff;
+    }
+    .el-submenu__title{
+        font-weight: bold;
+    }
+    .el-submenu .el-menu-item{
+        height: 40px;
+        line-height: 40px;
+        padding-right: 20px;
+        min-width: 185px;
+    }
+    .el-menu-item-group__title{
+        height: 40px;
+        line-height: 40px;
+        padding: 0 35px;
+        font-size: 12px;
+    }
+    .el-menu--dark, .el-menu--dark .el-submenu .el-menu{
+        background-color: #222222;
+    }
+    .el-menu--dark .el-menu-item, .el-menu--dark .el-submenu__title, .el-menu--dark .el-menu-item-group__title{
+        color: #cccccc;
+    }
+    .el-menu--dark .el-menu-item.is-active{
+        background-color: #48576a;
+    }
+
+    .el-breadcrumb{
+        font-size: 12px;
+        line-height: 30px;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+        border-bottom: 1px solid #e2e2e2;
+    }
+    .el-breadcrumb__item{
+        font-size: 14px;
+    }
+    .el-breadcrumb__item__inner:hover{
+        cursor: default;
+        color: #48576a;
+    }
+    .el-breadcrumb__item:last-child .el-breadcrumb__item__inner{
+        color: #20a0ff;
+        &:hover{
+            color: #20a0ff;
+        }
+    }
+
+    .el-message-box__btns{
+        text-align: center;
+        padding-bottom: 10px;
+        .el-button{
+            width: 60px;
+        }
+    }
+
+    .el-radio-button__inner{
+        padding: 0 15px;
+        font-size: 12px;
+        line-height: 28px;
+    }
+
+    .el-table__expanded-cell{
+        padding: 20px 40px;
+    }
+
+    .el-loading-mask{
+        background-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .el-dialog{
+        background-color: #f2f2f2;
+        border: 1px solid #9b9b9b;
+    }
+    .el-dialog__header{
+        padding: 10px 20px 5px 20px;
+    }
+    .el-dialog__title{
+        font-size: 14px;
+    }
+    .el-dialog__headerbtn{
+        top: 14px;
+        right: 18px;
+    }
+    .el-dialog__body{
+        padding: 5px 20px 20px 20px;
+        font-size: 12px;
+    }
+
+    .el-tree-node__content{
+        height: 30px;
+    }
+
+    .el-message--success{
+        border-color: #acd6a7;
+    }
+    .el-message--error {
+        border-color: #fdc3b6;
+    }
+    .el-message--warning {
+        border-color: #f9a95a;
+    }
+
+    .v-modal{
+        opacity: 0.2;
+    }
+}
+
+//公共样式
+.cm-form{
+    width: 500px;
+    .el-checkbox, .el-radio{
+        padding-right: 15px;
+    }
+    .el-checkbox+.el-checkbox, .el-radio+.el-radio{
+        margin-left: 0;
+    }
+    .el-select{
+        width: 100%;
+    }
+}
+
+.cm-form-inline{
+    width: 100%;
+    .search-form{
+        font-size: 0;
+        padding: 25px 25px 10px 25px;
+        margin-bottom: 20px;
+        border: 1px solid #e2ebf2;
+        background-color: #eaf4fd;
+    }
+    .el-form{
+        .el-form-item{
+            margin-right: 25px;
+            margin-bottom: 15px;
+        }
+        .el-form-item__label{
+            padding-bottom: 4px;
+        }
+    }
+}
+
+.cm-back-btn-wrap{
+    position: relative;
+    .btn-back{
+        position: absolute;
+        top: 50%;
+        right: 0;
+        margin-top: -16px;
+        padding: 6px 10px;
+    }
+}
+
+.cm-text-red{
+    color: #e20000;
+}
+.cm-text-green{
+    color: #459020;
+}
+.cm-text-orange{
+    color: #ffae2c;
+}
+.cm-text-blue{
+    color: #409eff;
+}
+.cm-text-violet{
+    color: #9e45ff;
+}
+.cm-text-light{
+    color: #999999;
+}
+
+.cm-link-blue{
+    color: #409eff;
+}
+.cm-link-blue:hover, .cm-link-blue:active{
+    color: #1773b8;
+}
+
+.cm-alert-box, .cm-confirm-box{
+    width: 290px !important;
+}

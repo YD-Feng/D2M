@@ -1,0 +1,431 @@
+<template>
+    <div class="home-page">
+        <div class="history-wrap">
+            <p class="title">最近打开的项目:</p>
+            <div class="cont">
+                <div ref="vBar" v-bar style="height: 100%;">
+                    <!--这个 div 不是多余的，是用来生成 vue-bar 内层的，不能删除-->
+                    <div>
+                        <ul class="history-list"
+                            v-if="historyList.length > 0">
+                            <li class="item"
+                                v-for="(item, index) in historyList"
+                                @click="handleOpenProject(item.projectPath)">
+                                <p class="project-name"
+                                   :title="item.projectName">
+                                    {{item.projectName}}
+                                </p>
+                                <p class="project-path"
+                                   :title="item.projectPath">
+                                    {{item.projectPath}}
+                                </p>
+                                <button class="btn" @click="handleDeleteHistory($event, index)">
+                                    <i class="el-icon-delete"></i>
+                                </button>
+                            </li>
+                        </ul>
+
+                        <div class="text-center"
+                             style="height: 600px; line-height: 600px;"
+                             v-if="historyList.length == 0">
+                            <div class="history-no-data cm-text-light">
+                                <i class="icon-font icon-wushuju" style="font-size: 40px;"></i>
+                                <br>
+                                --- 暂无历史记录 ---
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="contain">
+            <div class="logo">
+                <i class="icon-font icon-shujujianmo"></i>
+                <p class="pt20px fBold f18px">D2M</p>
+                <p class="pt5px f14px cm-text-light">Data to Model</p>
+            </div>
+
+            <div class="action">
+                <el-button
+                    type="text"
+                    @click="openCreateDialog">
+                    <i class="icon-font icon-xinjian"></i>
+                    创建新项目
+                </el-button>
+                <br>
+                <el-button
+                    type="text"
+                    @click="handleOpenProject()">
+                    <i class="icon-font icon-dakai"></i>
+                    打开项目
+                </el-button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <span class="pl15px pr15px">2019 © Powered By YD-Feng</span>
+        </div>
+
+        <el-dialog
+            title="创建新项目"
+            custom-class="home-page-dialog-430px"
+            :visible.sync="elDialog.visible">
+            <div class="pl20px pr20px pt10px">
+                <div class="pb20px lh30px">
+                    项目名称&nbsp;
+                    <el-input
+                        v-model.trim="elDialog.projectName"
+                        style="width: 280px;">
+                    </el-input>
+                </div>
+
+                <div class="pb20px lh30px">
+                    保存目录&nbsp;
+                    <el-input
+                        v-model.trim="elDialog.projectDir"
+                        readonly
+                        style="width: 280px; vertical-align: middle;">
+                        <template slot="append">
+                            <div class="text-center">
+                                <el-button
+                                    type="text"
+                                    @click="handleOpenSysDialog">
+                                    ...
+                                </el-button>
+                            </div>
+                        </template>
+                    </el-input>
+                </div>
+
+                <div class="text-center">
+                    <el-button
+                        type="primary"
+                        style="width: 60px;"
+                        @click="handleCreateProject">
+                        确定
+                    </el-button>
+
+                    <el-button
+                        type="default"
+                        style="width: 60px;"
+                        @click="closeDialog">
+                        取消
+                    </el-button>
+                </div>
+            </div>
+        </el-dialog>
+    </div>
+</template>
+
+<script>
+    import electron from 'electron';
+    import path from 'path';
+    import config from 'config';
+    import deepClone from './../js/utils/deep-clone';
+    import defaultData from './../js/utils/default-data';
+    import { fileExist, readFilePromise, saveFilePromise, saveFileSync } from '../js/utils/fs';
+
+    const { dialog } = electron.remote;
+
+    export default {
+        data () {
+            return {
+                historyList: [],
+                elDialog: {
+                    visible: false,
+                    projectName: '',
+                    projectDir: ''
+                }
+            }
+        },
+        methods: {
+            openCreateDialog () {
+                let _this = this;
+                _this.elDialog.projectName = '';
+                _this.elDialog.projectDir = '';
+                _this.elDialog.visible = true;
+            },
+
+            closeDialog () {
+                this.elDialog.visible = false;
+            },
+
+            handleOpenSysDialog () {
+                let _this = this;
+
+                dialog.showOpenDialog({
+                    title: '请选择项目保存目录',
+                    properties: ['openDirectory'],
+                    buttonLabel: '确定'
+                }, (result) => {
+                    if (result) {
+                        _this.elDialog.projectDir = result[0];
+                    }
+                });
+            },
+
+            handleCreateProject () {
+                let _this = this;
+
+                if (_this.elDialog.projectName === '') {
+                    _this.$message.error('项目名称不能为空');
+                    return;
+                }
+
+                if (_this.elDialog.projectDir === '') {
+                    _this.$message.error('项目名称不能为空');
+                    return;
+                }
+
+                let projectPath = path.join(_this.elDialog.projectDir, _this.elDialog.projectName + '.json');
+
+                if ( fileExist(projectPath) ) {
+                    _this.$message.error('创建项目失败，该项目已经存在了！');
+                    return;
+                }
+
+                // 更新历史记录
+                saveFilePromise({
+                    modules: [],
+                    dataTypeDomains: deepClone(defaultData.profile.defaultDataTypeDomains),
+                }, projectPath).then(() => {
+
+                    _this.closeDialog();
+
+                    _this.historyList.unshift({
+                        projectName: _this.elDialog.projectName,
+                        projectPath: projectPath
+                    });
+                    // 更新历史记录
+                    saveFileSync({
+                        historyList: _this.historyList
+                    }, config.historyPath);
+
+                    _this.$store.commit('setProjectName', _this.elDialog.projectName);
+                    _this.$store.commit('setProjectPath', projectPath);
+                    _this.$store.commit('setProjectData', result);
+                    _this.$router.push({
+                        path: '/editor'
+                    });
+
+                });
+            },
+
+            handleOpenProject (projectPath) {
+                let _this = this;
+
+                if (projectPath) {
+                    // 通过点击 最近打开的项目历史记录 来打开项目
+                    _this.readData(projectPath);
+                } else {
+                    dialog.showOpenDialog({
+                        title: '打开项目',
+                        properties: ['openFile'],
+                        filters: [
+                            {
+                                name: 'D2M-Project',
+                                extensions: ['json']
+                            }
+                        ]
+                    }, (result) => {
+                        if (result) {
+                            _this.readData(result[0]);
+                        }
+                    });
+                }
+            },
+            readData (projectPath) {
+                let _this = this;
+
+                if (fileExist(projectPath)) {
+
+                    readFilePromise(projectPath).then((result) => {
+                        // 过滤已经存在的历史记录
+                        const projectName = projectPath.split('.json')[0].split(path.sep).pop();
+                        const arr = _this.historyList.filter(item => item.projectName !== projectName);
+
+                        // 把当前的项目插入到第一条数据
+                        arr.unshift({
+                            projectName: projectName,
+                            projectPath: projectPath
+                        });
+
+                        _this.historyList = arr;
+                        // 更新历史记录
+                        saveFileSync({
+                            historyList: arr
+                        }, config.historyPath);
+
+                        _this.$store.commit('setProjectName', projectName);
+                        _this.$store.commit('setProjectPath', projectPath);
+                        _this.$store.commit('setProjectData', result);
+                        _this.$store.commit('setCompareData', result);
+                        _this.$router.push({
+                            path: '/editor'
+                        });
+                    }).catch((e) => {
+                        dialog.showErrorBox('打开项目失败！', JSON.stringify(e));
+                    });
+
+                } else {
+                    dialog.showErrorBox('打开项目失败！', '该项目已经不存在了！');
+                }
+            },
+
+            handleDeleteHistory (e, index) {
+                e.stopPropagation();
+                let _this = this;
+
+                _this.historyList.splice(index, 1);
+                // 更新历史记录
+                saveFileSync({
+                    historyList: _this.historyList
+                }, config.historyPath);
+            }
+        },
+        created () {
+            let _this = this;
+
+            if (fileExist(config.historyPath)) {
+                readFilePromise(config.historyPath).then((res) => {
+                    _this.historyList = res.historyList || [];
+                });
+            }
+        }
+    };
+</script>
+
+<style>
+    .home-page{
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+    .home-page .history-wrap{
+        position: relative;
+        width: 220px;
+        height: 100%;
+        background-color: #fcfcfc;
+        border-right: 1px solid #9b9b9b;
+        padding-top: 30px;
+        float: left;
+    }
+    .home-page .history-wrap .title{
+        font-weight: bold;
+        line-height: 30px;
+        padding: 0 5px;
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        border-bottom: 1px solid #e2e2e2;
+    }
+    .home-page .history-wrap .cont{
+        height: 100%;
+    }
+    .home-page .history-list{
+        overflow: hidden;
+    }
+    .home-page .history-list .item{
+        border-bottom: 1px dashed #dadada;
+        padding: 10px 32px 10px 10px;
+        cursor: pointer;
+        position: relative;
+    }
+    .home-page .history-list .item:hover{
+        background-color: #ececec;
+    }
+    .home-page .history-list .project-name, .home-page .history-list .project-path{
+        width: 100%;
+        height: 20px;
+        line-height: 20px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .home-page .history-list .project-name{
+        font-size: 14px;
+        font-weight: bold;
+    }
+    .home-page .history-list .project-path{
+        font-size: 12px;
+        color: #8c8c8c;
+    }
+    .home-page .history-list .btn{
+        border: none;
+        background: transparent;
+        display: none;
+        width: 26px;
+        height: 20px;
+        position: absolute;
+        top: 50%;
+        right: 2px;
+        margin-top: -10px;
+    }
+    .home-page .history-list .btn:hover{
+        color: #e20000;
+    }
+    .home-page .history-list .item:hover .btn{
+        display: block;
+    }
+    .home-page .history-no-data{
+        display: inline-block;
+        line-height: 40px;
+    }
+    .home-page .contain{
+        width: 828px;
+        height: 670px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin-top: -335px;
+        margin-left: -304px;
+    }
+    .home-page .logo{
+        margin: 0 auto;
+        text-align: center;
+        padding-top: 100px;
+    }
+    .home-page .logo .icon-font{
+        font-size: 100px;
+        color: #0075c2;
+    }
+    .home-page .action{
+        padding-top: 40px;
+        width: 120px;
+        margin: 0 auto;
+        text-align: left;
+    }
+    .home-page .action .icon-font{
+        display: inline-block;
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        text-align: center;
+        color: #ffffff;
+        border-radius: 50%;
+        background-color: #0095f9;
+        margin-right: 3px;
+    }
+    .home-page .action .icon-font:before{
+        position: relative;
+        right: -1px;
+    }
+    .home-page .action .el-button{
+        font-size: 14px;
+    }
+    .home-page .footer{
+        text-align: center;
+        font-size: 12px;
+        color: #3a3a3a;
+        width: 100%;
+        padding-left: 220px;
+        position: absolute;
+        bottom: 40px;
+    }
+
+    .home-page-dialog-430px{
+        width: 430px;
+    }
+</style>

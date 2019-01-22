@@ -1,0 +1,11 @@
+//截取文本(仅针对单行)
+@fontFamily: "Monospaced Number", "Chinese Quote", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+.text-single-line-ellipsis(@height, @line-height, @width: auto){
+    width: @width;
+    height: @height;
+    line-height: @line-height;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

@@ -1,0 +1,273 @@
+.tab-win-cont{
+    padding: 10px;
+}
+.tab-win-cont .title{
+    font-size: 14px;
+    font-weight: bold;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #808080;
+}
+.tab-win-cont .table-wrap{
+    padding: 30px 20px 10px 20px;
+    background-color: #f2f2f2;
+    border: 1px solid #808080;
+}
+.tab-win-cont .table{
+    width: 100%;
+}
+.tab-win-cont .table td{
+    white-space: nowrap;
+    word-break: break-all;
+    word-wrap: normal;
+}
+
+/*页签样式*/
+.tab-win-cont .el-tabs__header{
+    margin-bottom: 0;
+}
+.tab-win-cont .el-tabs--card>.el-tabs__header{
+    border-bottom: 1px solid #c6c6c6;
+}
+.tab-win-cont .el-tabs--card>.el-tabs__header .el-tabs__nav{
+    border: 1px solid #c6c6c6;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+.tab-win-cont .el-tabs--card>.el-tabs__header .el-tabs__item{
+    height: 29px;
+    line-height: 29px;
+    font-size: 12px;
+    border-left: 1px solid #c6c6c6;
+    background-color: #e0e0e0;
+    padding: 0 10px;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+.tab-win-cont .el-tabs--card>.el-tabs__header .el-tabs__item:first-child{
+    border-left: none;
+}
+.tab-win-cont .el-tabs--card>.el-tabs__header .el-tabs__item.is-active{
+    background-color: #f2f2f2;
+    border-bottom-color: #f2f2f2;
+    font-weight: bold;
+}
+.tab-win-cont .el-tabs--card .table-wrap{
+    border: 1px solid #c6c6c6;
+    border-top: none;
+}
+
+/*编辑器外壳*/
+.tab-win-cont .editor-wrap{
+    border: 1px solid #c6c6c6;
+    border-top: none;
+    background: #ffffff;
+}
+
+.tab-win-cont .default-dlg-cont .editor-wrap{
+    width: 703px;
+}
+.tab-win-cont .default-dlg-cont .editor-wrap .pre{
+    width: fit-content;
+    margin: 0;
+    padding: 5px;
+    line-height: 2;
+    font-family: sans-serif;
+}
+
+/*预览弹窗样式*/
+.tab-win-cont .preview-dlg-cont{
+    position: relative;
+    padding: 0 25%;
+}
+.tab-win-cont .preview-dlg-cont .data-wrap, .tab-win-cont .preview-dlg-cont .result-wrap{
+    width: 25%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    padding-top: 30px;
+}
+.tab-win-cont .preview-dlg-cont .data-wrap{
+    left: 0;
+}
+.tab-win-cont .preview-dlg-cont .result-wrap{
+    right: 0;
+}
+.tab-win-cont .preview-dlg-cont .dlg-editor-wrap{
+    height: 100%;
+    padding: 30px 20px 0 20px;
+    position: relative;
+}
+.tab-win-cont .preview-dlg-cont .dlg-title{
+    width: 100%;
+    height: 30px;
+    line-height: 30px;
+    font-weight: bold;
+    overflow: hidden;
+    text-align: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+.tab-win-cont .preview-dlg-cont .editor-wrap{
+    border-top: 1px solid #c6c6c6;
+    height: 100%;
+}
+.tab-win-cont .preview-dlg-cont .editor-wrap .pre{
+    width: fit-content;
+    margin: 0;
+    padding: 5px;
+    line-height: 2;
+    font-family: sans-serif;
+}
+
+/*语法介绍*/
+.tab-win-cont .grammar-dlg-cont{
+    height: 510px;
+}
+.tab-win-cont .grammar-dlg-cont .dlg-table{
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #c1c1c1;
+}
+.tab-win-cont .grammar-dlg-cont .dlg-table th, .tab-win-cont .grammar-dlg-cont .dlg-table td{
+    height: 30px;
+    vertical-align: middle;
+    font-size: 14px;
+    padding: 5px 10px;
+    border: 1px solid #c1c1c1;
+}
+.tab-win-cont .grammar-dlg-cont .dlg-table th{
+    font-weight: bold;
+    background-color: #dedede;
+    text-align: left;
+}
+.tab-win-cont .hljs{
+    background: #ffffff;
+}
+
+/*覆盖编辑器样式*/
+.tab-win-cont .ace-chrome .ace_marker-layer .ace_active-line{
+    background: rgba(93, 189, 255, 0.2);
+}
+
+.editor-page-dialog-850px{
+    width: 850px;
+}
+.editor-page-dialog-1000px{
+    width: 1000px;
+    top: 50%;
+}
+
+/*数据表字段信息表格样式*/
+.tab-win-cont .field-table th,
+.tab-win-cont .field-table td{
+    padding: 0;
+}
+.tab-win-cont .field-table th>.cell,
+.tab-win-cont .field-table td>.cell{
+    padding: 3px 5px;
+    margin: 0;
+    line-height: 30px;
+}
+.tab-win-cont .field-table th div{
+    display: block;
+}
+.tab-win-cont .field-table .el-table__body tr:hover>td, .tab-win-cont .field-table .el-table__body tr.hover-row>td{
+    background-color: #ffffff;
+}
+.tab-win-cont .custom-table-header{
+    padding: 0;
+    height: 30px;
+    line-height: 30px;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+    text-align: center;
+    font-weight: normal;
+}
+.tab-win-cont .custom-table-header .icon-font, .tab-win-cont .custom-table-btn-wrap .icon-font{
+    display: inline-block;
+    vertical-align: top;
+    margin-left: 3px;
+    cursor: pointer;
+    color: #409eff;
+}
+.tab-win-cont .custom-table-header .icon-bukejian, .tab-win-cont .custom-table-btn-wrap .icon-bukejian{
+    color: #970000;
+}
+.tab-win-cont .custom-table-header .disabled{
+    color: #b6b6b6;
+}
+.tab-win-cont .field-table .el-input__inner{
+    text-align: center;
+}
+.tab-win-cont .field-table .el-input--suffix .el-input__inner{
+    padding-left: 12px;
+}
+.tab-win-cont .data-base-code .editor-wrap{
+    height: 360px;
+    overflow: auto;
+}
+.tab-win-cont .data-base-code .editor-wrap .pre{
+    width: fit-content;
+    margin: 0;
+    padding: 5px;
+    line-height: 2;
+    font-family: sans-serif;
+}
+.tab-win-cont .el-radio-button__inner{
+    transition: none;
+}
+
+.tab-win-cont .line{
+    height: 0;
+    line-height: 0;
+    border-top: 1px dashed #e2e2e2;
+}
+
+.tab-win-cont .scale-txt,
+.tab-win-cont .tips-txt,
+.tab-win-cont .tools-wrap{
+    position: absolute;
+    height: 34px;
+    line-height: 34px;
+    padding: 0 10px;
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #ffffff;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+.tab-win-cont .scale-txt{
+    top: 6px;
+    left: 6px;
+}
+.tab-win-cont .tips-txt{
+    bottom: 6px;
+    right: 6px;
+}
+.tab-win-cont .tools-wrap{
+    top: 6px;
+    right: 6px;
+}
+.tab-win-cont .tools-wrap .el-button{
+    padding: 0;
+    margin: 0 6px;
+}
+.tab-win-cont .tools-wrap .el-button--text{
+    color: #f8f8f8;
+    text-shadow: 0 0 2px #000;
+}
+.tab-win-cont .tools-wrap .active{
+    color: #43ca19;
+    text-shadow: 0 0 2px #2ca317;
+}
+
+.tab-win-cont .tools-wrap .icon-font{
+    font-size: 20px;
+}
