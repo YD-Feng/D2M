@@ -22,6 +22,14 @@
                 <el-button
                     class="btn"
                     type="text"
+                    @click="openSettingDialog()">
+                    <i class="icon-font icon-shezhi"></i>
+                    <span>维护实例名/库名</span>
+                </el-button>
+
+                <el-button
+                    class="btn"
+                    type="text"
                     @click="handleBackToHome()">
                     <i class="icon-font icon-tuichu"></i>
                     <span>退出项目</span>
@@ -90,7 +98,9 @@
                             <div class="custom-tree-node"
                                  slot-scope="{node, data}"
                                  :draggable="data.nodeType == 3"
-                                 @dragstart="handleDragStart($event, data, node)">
+                                 @dragstart="handleDragStart($event, data, node)"
+                                 @dragover="handleDragOver($event, data, node)"
+                                 @drop="handleDrop($event, data, node)">
                                 <i class="icon-font"
                                    :class="treeNodeClass[data.nodeType]">
                                 </i>
@@ -198,6 +208,8 @@
                             :change-list="changeList"
                             :last-tab="item.lastTab"
                             @data-change="handleWinDataChange"
+                            @field-visible-change="handleFieldVisibleChange"
+                            @field-sort-change="handleFieldSortChange"
                             @tab-change="handleTabChange">
                         </data-table>
 
@@ -389,6 +401,45 @@
         </el-dialog>
 
         <el-dialog
+            title="维护实例名/库名"
+            custom-class="editor-page-dialog-430px"
+            :visible.sync="settingDialog.visible">
+            <div class="pl20px pr20px pt10px">
+                <div class="pb20px lh30px">
+                    实例名称&nbsp;
+                    <el-input
+                        v-model.trim="settingDialog.rdsName"
+                        style="width: 280px;">
+                    </el-input>
+                </div>
+
+                <div class="pb20px lh30px">
+                    数据库名&nbsp;
+                    <el-input
+                        v-model.trim="settingDialog.databaseName"
+                        style="width: 280px;">
+                    </el-input>
+                </div>
+
+                <div class="text-center">
+                    <el-button
+                        type="primary"
+                        style="width: 60px;"
+                        @click="handleUpdateSource">
+                        确定
+                    </el-button>
+
+                    <el-button
+                        type="default"
+                        style="width: 60px;"
+                        @click="closeDialog">
+                        取消
+                    </el-button>
+                </div>
+            </div>
+        </el-dialog>
+
+        <el-dialog
             title="生成新版本"
             custom-class="editor-page-dialog-430px"
             :visible.sync="versionDialog.visible">
@@ -459,7 +510,7 @@
 <script>
     import electron from 'electron';
     import path from 'path';
-    import { saveFileSync, ensureDirectoryExistence, getFilesByDirSync, readFilePromise } from './../../js/utils/fs';
+    import { saveFileSync, ensureDirectoryExistence, getFilesByDirSync, readFilePromise, fileExist } from './../../js/utils/fs';
     import { checkVersionData } from './../../js/utils/project-version';
     import deepClone from './../../js/utils/deep-clone';
     import defaultData from './../../js/utils/default-data';
@@ -609,6 +660,12 @@
                     visible: false,
                     projectName: '',
                     projectDir: ''
+                },
+
+                settingDialog: {
+                    visible: false,
+                    rdsName: '',
+                    databaseName: ''
                 },
 
                 versionDialog: {
@@ -1394,8 +1451,10 @@
                         let entity = {
                             title: title,
                             chnname: chnname,
+                            remark: '',
                             fields: deepClone(defaultData.profile.defaultFields),
-                            headers: deepClone(defaultData.profile.defaultHeaders)
+                            headers: deepClone(defaultData.profile.defaultHeaders),
+                            indexs: []
                         };
 
                         _this.projectData.modules[moduleIndex].entities.push(entity);
@@ -1509,6 +1568,7 @@
                         _this.projectData.dataTypeDomains.datatype[dataTypeIndex].name = name;
                         _this.projectData.dataTypeDomains.datatype[dataTypeIndex].code = code;
                         _this.dataConfigTreeData[0].children[dataTypeIndex].label = `${name}[${code}]`;
+                        _this.dataConfigTreeData[0].children[dataTypeIndex].orgObj = _this.projectData.dataTypeDomains.datatype[dataTypeIndex];
 
                         filterFn = (item, index) => {
                             return (
@@ -1522,6 +1582,7 @@
                     case 'renameDataBase':
                         _this.projectData.dataTypeDomains.database[dataBaseIndex].code = code;
                         _this.dataConfigTreeData[1].children[dataBaseIndex].label = code;
+                        _this.dataConfigTreeData[1].children[dataTypeIndex].orgObj = _this.projectData.dataTypeDomains.database[dataBaseIndex];
 
                         filterFn = (item, index) => {
                             return (
@@ -1551,6 +1612,12 @@
                 _this.elDialog.projectDir = path.dirname(_this.projectPath);
                 _this.elDialog.visible = true;
             },
+            openSettingDialog () {
+                let _this = this;
+                _this.settingDialog.rdsName = _this.projectData.source ? _this.projectData.source.rdsName : '';
+                _this.settingDialog.databaseName = _this.projectData.source ? _this.projectData.source.databaseName: '';
+                _this.settingDialog.visible = true;
+            },
             openVersionDialog () {
                 let _this = this,
                     vCodeA = 1,
@@ -1575,20 +1642,6 @@
                 _this.versionDialog.description = '';
                 _this.versionDialog.visible = true;
             },
-            openCompareTabWin (newVerCode, oldVerCode) {
-                let _this = this;
-                if (newVerCode !== undefined && oldVerCode !== undefined) {
-                    _this.openTabWin({
-                        type: 6,
-                        newVerCode: newVerCode,
-                        oldVerCode: oldVerCode
-                    });
-                } else {
-                    _this.openTabWin({
-                        type: 7
-                    });
-                }
-            },
 
             //关闭弹窗
             closeDialog () {
@@ -1596,6 +1649,7 @@
                 _this.contextMenuDialog.visible = false;
                 _this.elDialog.visible = false;
                 _this.versionDialog.visible = false;
+                _this.settingDialog.visible = false;
             },
 
             handleOpenSysDialog () {
@@ -1642,6 +1696,40 @@
                 });
             },
 
+            handleUpdateSource () {
+                let _this = this;
+
+                if (_this.settingDialog.rdsName === '') {
+                    _this.$message.error('实例名称不能为空');
+                    return;
+                }
+
+                if (_this.settingDialog.databaseName === '') {
+                    _this.$message.error('数据库名不能为空');
+                    return;
+                }
+
+                _this.projectData.source = {
+                    rdsName: _this.settingDialog.rdsName,
+                    databaseName: _this.settingDialog.databaseName
+                };
+                _this.closeDialog();
+            },
+
+            openCompareTabWin (newVerCode, oldVerCode) {
+                let _this = this;
+                if (newVerCode !== undefined && oldVerCode !== undefined) {
+                    _this.openTabWin({
+                        type: 6,
+                        newVerCode: newVerCode,
+                        oldVerCode: oldVerCode
+                    });
+                } else {
+                    _this.openTabWin({
+                        type: 7
+                    });
+                }
+            },
             //打开 tab 和 编辑窗（关系图、数据表、数据类型、数据库、版本变更详情、版本对比）
             openTabWin (opts) {
                 let _this = this,
@@ -1842,6 +1930,60 @@
                 //取消文字选中（双击数据表来打开 tabWin，会出现 tabWin 内的文字都被选中的情况，所以添加下面的脚本）
                 window.getSelection().removeAllRanges();
             },
+            //删除字段 或者 设置字段在关系图中隐藏 后触发的回调函数
+            handleFieldVisibleChange (fieldIndex, tableTitle, fieldName) {
+                let _this = this;
+
+                _this.projectData.modules.forEach((module) => {
+                    let idMap = {};
+
+                    module.graphCanvas.nodes.forEach((item) => {
+                        if (item.title === tableTitle) {
+                            idMap[item.id] = true;
+                        }
+                    });
+
+                    module.graphCanvas.edges = module.graphCanvas.edges.filter((item) => {
+                        return !idMap[item.source] && !idMap[item.target];
+                    });
+
+                    module.associations = module.associations.filter((item) => {
+                        return (item.from.entity !== tableTitle || item.from.field !== fieldName) && (item.to.entity !== tableTitle || item.to.field !== fieldName);
+                    });
+                });
+            },
+            //字段调序 后触发的回调函数
+            handleFieldSortChange (oldFieldIndex, newFieldIndex, tableTitle) {
+                let _this = this;
+
+                _this.projectData.modules.forEach((module) => {
+                    let idMap = {};
+
+                    module.graphCanvas.nodes.forEach((item) => {
+                        if (item.title === tableTitle) {
+                            idMap[item.id] = true;
+                        }
+                    });
+
+                    module.graphCanvas.edges.forEach((item) => {
+                        if (idMap[item.source]) {
+                            if ((item.sourceAnchor == oldFieldIndex * 2) || (item.sourceAnchor == oldFieldIndex * 2 + 1)) {
+                                item.sourceAnchor = (newFieldIndex * 2) + (item.sourceAnchor % 2);
+                            } else if ((item.sourceAnchor == newFieldIndex * 2) || (item.sourceAnchor == newFieldIndex * 2 + 1)) {
+                                item.sourceAnchor = (oldFieldIndex * 2) + (item.sourceAnchor % 2);
+                            }
+                        }
+
+                        if (idMap[item.target]) {
+                            if ((item.targetAnchor == oldFieldIndex * 2) || (item.targetAnchor == oldFieldIndex * 2 + 1)) {
+                                item.targetAnchor = (newFieldIndex * 2) + (item.targetAnchor % 2);
+                            } else if ((item.targetAnchor == newFieldIndex * 2) || (item.targetAnchor == newFieldIndex * 2 + 1)) {
+                                item.targetAnchor = (oldFieldIndex * 2) + (item.targetAnchor % 2);
+                            }
+                        }
+                    });
+                });
+            },
             handleTabChange (curTab) {
                 let _this = this;
                 _this.tabWinList[_this.curTabIndex].lastTab = curTab;
@@ -1857,6 +1999,50 @@
                     });
 
                 e.dataTransfer.setData('text/plain', `${moduleIndex}@${entityIndex}`);
+            },
+            handleDragOver (e, data, node) {
+                e.preventDefault();
+                if (data.label == '数据表') {
+                    e.dataTransfer.dropEffect = 'move';
+                } else {
+                    e.dataTransfer.dropEffect = 'none';
+                }
+            },
+            handleDrop (e, data, node) {
+                e.preventDefault();
+
+                let _this = this,
+                    arr = e.dataTransfer.getData('text/plain').split('@'),
+                    sourceModuleIndex = arr[0],
+                    sourceEntityIndex = arr[1],
+                    targetModuleIndex = _this.projectData.modules.findIndex((item) => {
+                        return item.name === node.parent.data.orgObj.name;
+                    });
+
+                if (sourceModuleIndex != targetModuleIndex) {
+                    let sourceEntity = _this.projectData.modules[sourceModuleIndex].entities.splice(sourceEntityIndex, 1)[0];
+                    _this.projectData.modules[targetModuleIndex].entities.push(deepClone(sourceEntity));
+
+                    _this.projectData.modules.forEach((module) => {
+                        module.graphCanvas.nodes.forEach((node) => {
+                            if (node.title == sourceEntity.title) {
+                                node.moduleName = _this.projectData.modules[targetModuleIndex].name;
+                            }
+                        });
+                    });
+
+                    let sourceTreeItem = _this.modulesTreeData[sourceModuleIndex].children[1].children.splice(sourceEntityIndex, 1)[0];
+                    _this.modulesTreeData[targetModuleIndex].children[1].children.push(deepClone(sourceTreeItem));
+
+                    _this.tabWinList.forEach((item) => {
+                        if (item.type == 3 && item.moduleIndex == sourceModuleIndex && item.entityIndex == sourceEntityIndex) {
+                            //更新页签对象信息
+                            item.moduleIndex = targetModuleIndex;
+                        }
+                    });
+
+                    _this.refreshTabWin();
+                }
             },
 
             //保存内容 （当 notSaveFile 为 true 时，只同步组件数据，不同步保存到本地文件中）
@@ -2121,11 +2307,7 @@
             _this.dataConfigTreeData = dataConfigTreeData;
 
             document.onkeydown = (e) => {
-                if ((e.ctrlKey || e.metaKey) && e.shiftKey) {
-                    if (e.code === 'KeyD') {
-                        ipcRenderer.sendSync('windowOrder', 'openDevTools');
-                    }
-                } else if (e.ctrlKey || e.metaKey) {
+                if (e.ctrlKey || e.metaKey) {
                     if (e.code === 'KeyS') {
                         // 保存全部 tab 的修改
                         _this.handleSave();
@@ -2134,14 +2316,15 @@
                         _this.tabWinList.length > 0 && _this.closeTabWin(e, _this.curTabIndex);
                     }
                 }
+
+                if (e.code === 'F12') {
+                    ipcRenderer.sendSync('windowOrder', 'openDevTools');
+                }
             };
 
             _this.getVersionList();
 
             window.vm = this;
-        },
-        destroyed () {
-            document.onkeydown = null;
         }
     };
 </script>

@@ -97,7 +97,7 @@ module.exports = {
             {
                 from: path.resolve(__dirname, './src/main.js'),
                 to: path.resolve(__dirname, './build/main.js')
-            },
+            }
         ])
     ],
     resolve: {

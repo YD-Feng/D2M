@@ -47,7 +47,8 @@
                 net: null,
                 netMode: 'edit',
                 netScale: 1,
-                netDragging: false
+                netDragging: false,
+                netRefreshTimeout: null
             };
         },
         computed: {
@@ -95,7 +96,6 @@
                                 y: _this.curGraphCanvas.nodes[0].y
                             });
                         }
-                        console.info(`123`);
                     } else {
                         _this.init();
                     }
@@ -321,7 +321,9 @@
                         });
 
                         //绘制表格每一行的内容
-                        table.fields.forEach((field, i) => {
+                        table.fields.filter((field, i) => {
+                            return field.relationNoShow;
+                        }).forEach((field, i) => {
                             headerGroupKeys.forEach((fieldName) => {
                                 headerGroup[fieldName].addShape('text', {
                                     attrs: {
@@ -394,7 +396,9 @@
                                 firstGroup.get('children')[0] &&
                                 firstGroup.get('children')[0].getBBox().height;
 
-                        table.fields.forEach((field, i) => {
+                        table.fields.filter((field, i) => {
+                            return field.relationNoShow;
+                        }).forEach((field, i) => {
                             let y = (titleBox.height + (padding * 3) + ((i + 1) * lineHeight) - (lineHeight - fontHeight) - (fontHeight / 2) + 1) / backRectHeight;
                             anchorPoints.push([0, y]);
                             anchorPoints.push([1, y]);
@@ -564,7 +568,8 @@
                                 headers: entity.headers
                             });
 
-                            setTimeout(() => {
+                            clearTimeout(_this.netRefreshTimeout);
+                            _this.netRefreshTimeout = setTimeout(() => {
                                 //然后更新节点信息
                                 _this.net.update(item, {
                                     title: newTitle,
@@ -582,6 +587,18 @@
                 });
 
                 _this.net.on('itemremove', (e) => {
+                    let item = e.item,
+                        type = item.get('type');
+
+                    if (type === 'edge') {
+                        clearTimeout(_this.netRefreshTimeout);
+                        _this.netRefreshTimeout = setTimeout(() => {
+                            let source =_this.net.save().source;
+                            _this.getAssociations(source);
+                            _this.net.changeData(source.nodes, source.edges);
+                        });
+                    }
+
                     _this.handleChange();
                 });
             },

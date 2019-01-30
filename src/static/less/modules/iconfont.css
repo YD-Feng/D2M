@@ -40,6 +40,14 @@
     content: "\e620";
 }
 
+.icon-houcha:before {
+    content: "\e64e";
+}
+
+.icon-qiancha:before {
+    content: "\e64f";
+}
+
 .icon-tuichu:before {
     content: "\e618";
 }

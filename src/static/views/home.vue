@@ -98,6 +98,22 @@
                     </el-input>
                 </div>
 
+                <div class="pb20px lh30px">
+                    实例名称&nbsp;
+                    <el-input
+                        v-model.trim="elDialog.rdsName"
+                        style="width: 280px;">
+                    </el-input>
+                </div>
+
+                <div class="pb20px lh30px">
+                    数据库名&nbsp;
+                    <el-input
+                        v-model.trim="elDialog.databaseName"
+                        style="width: 280px;">
+                    </el-input>
+                </div>
+
                 <div class="text-center">
                     <el-button
                         type="primary"
@@ -126,6 +142,7 @@
     import defaultData from './../js/utils/default-data';
     import { fileExist, readFilePromise, saveFilePromise, saveFileSync } from '../js/utils/fs';
 
+    const { ipcRenderer } = electron;
     const { dialog } = electron.remote;
 
     export default {
@@ -135,7 +152,9 @@
                 elDialog: {
                     visible: false,
                     projectName: '',
-                    projectDir: ''
+                    projectDir: '',
+                    rdsName: '',
+                    databaseName: ''
                 }
             }
         },
@@ -144,6 +163,8 @@
                 let _this = this;
                 _this.elDialog.projectName = '';
                 _this.elDialog.projectDir = '';
+                _this.elDialog.rdsName = '';
+                _this.elDialog.databaseName = '';
                 _this.elDialog.visible = true;
             },
 
@@ -178,37 +199,57 @@
                     return;
                 }
 
-                let projectPath = path.join(_this.elDialog.projectDir, _this.elDialog.projectName + '.json');
+                if (_this.elDialog.rdsName === '') {
+                    _this.$message.error('实例名称不能为空');
+                    return;
+                }
+
+                if (_this.elDialog.databaseName === '') {
+                    _this.$message.error('数据库名不能为空');
+                    return;
+                }
+
+                let projectPath = path.join(_this.elDialog.projectDir, _this.elDialog.projectName + '.json'),
+                    projectData = {
+                        source: {
+                            rdsName: _this.elDialog.rdsName,
+                            databaseName: _this.elDialog.databaseName
+                        },
+                        modules: [],
+                        dataTypeDomains: deepClone(defaultData.profile.defaultDataTypeDomains),
+                    };
 
                 if ( fileExist(projectPath) ) {
                     _this.$message.error('创建项目失败，该项目已经存在了！');
                     return;
                 }
 
+                // 保存项目
+                saveFileSync(projectData, projectPath);
+
+                _this.historyList.unshift({
+                    projectName: _this.elDialog.projectName,
+                    projectPath: projectPath
+                });
+
+                // 生成基点版本
+                saveFileSync(Object.assign({
+                    date: new Date().format('yyyy-MM-dd HH:mm:ss'),
+                    description: '基点版本'
+                }, projectData), path.join(projectPath.replace('json', 'version'), 'v1.0.0.json'));
+
                 // 更新历史记录
-                saveFilePromise({
-                    modules: [],
-                    dataTypeDomains: deepClone(defaultData.profile.defaultDataTypeDomains),
-                }, projectPath).then(() => {
+                saveFileSync({
+                    historyList: _this.historyList
+                }, config.historyPath);
 
-                    _this.closeDialog();
+                _this.closeDialog();
 
-                    _this.historyList.unshift({
-                        projectName: _this.elDialog.projectName,
-                        projectPath: projectPath
-                    });
-                    // 更新历史记录
-                    saveFileSync({
-                        historyList: _this.historyList
-                    }, config.historyPath);
-
-                    _this.$store.commit('setProjectName', _this.elDialog.projectName);
-                    _this.$store.commit('setProjectPath', projectPath);
-                    _this.$store.commit('setProjectData', result);
-                    _this.$router.push({
-                        path: '/editor'
-                    });
-
+                _this.$store.commit('setProjectName', _this.elDialog.projectName);
+                _this.$store.commit('setProjectPath', projectPath);
+                _this.$store.commit('setProjectData', projectData);
+                _this.$router.push({
+                    path: '/editor'
                 });
             },
 
@@ -257,6 +298,35 @@
                             historyList: arr
                         }, config.historyPath);
 
+                        //补全数据（反向生成的，或者其他 pdman 生成的项目 json 文件）
+                        if (!result.source) {
+                            //只要不是 D2M 的项目 json 文件，都没有 source 属性
+                            result.source = {
+                                rdsName: '',
+                                databaseName: ''
+                            };
+
+                            result.modules.forEach((module) => {
+                                module.entities.forEach((entity) => {
+                                    entity.fields.forEach((field) => {
+                                        field.chnname = field.chnname === undefined ? '' : field.chnname;
+                                        field.name = field.name === undefined ? '' : field.name;
+                                        field.type = field.type === undefined ? '' : field.type;
+                                        field.remark = field.remark === undefined ? '' : field.remark;
+                                        field.pk = field.pk === undefined ? false : field.pk;
+                                        field.notNull = field.notNull === undefined ? false : field.notNull;
+                                        field.autoIncrement = field.autoIncrement === undefined ? false : field.autoIncrement;
+                                        field.defaultValue = field.defaultValue === undefined ? '' : field.defaultValue;
+                                        field.relationNoShow = field.relationNoShow === undefined ? true : field.relationNoShow;
+                                    });
+
+                                    if (!entity.headers) {
+                                        entity.headers = deepClone(defaultData.profile.defaultHeaders);
+                                    }
+                                });
+                            });
+                        }
+
                         _this.$store.commit('setProjectName', projectName);
                         _this.$store.commit('setProjectPath', projectPath);
                         _this.$store.commit('setProjectData', result);
@@ -292,6 +362,12 @@
                     _this.historyList = res.historyList || [];
                 });
             }
+
+            document.onkeydown = (e) => {
+                if (e.code === 'F12') {
+                    ipcRenderer.sendSync('windowOrder', 'openDevTools');
+                }
+            };
         }
     };
 </script>

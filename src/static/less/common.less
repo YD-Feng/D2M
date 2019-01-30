@@ -28,14 +28,20 @@ html,body{
     }
     .el-button--text{
         -webkit-appearance: none;
-        -moz-user-select: text;
-        -webkit-user-select: text;
-        -ms-user-select: text;
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select: none;
         border: none;
     }
     .el-button--info{
         background-color: #0ebbff;
         border-color: #0ebbff;
+    }
+    .el-button--primary {
+        border-color: #409EFF;
+    }
+    .el-button--success {
+        border-color: #67c23a;
     }
     .el-button.is-disabled{
         border-color: #ebeef5;
@@ -179,7 +185,7 @@ html,body{
     }
     .el-select .el-tag{
         height: 20px;
-        line-height: 20px;
+        line-height: 17px;
         margin: 1px 0 1px 4px;
     }
     .el-popper .popper__arrow{
@@ -483,4 +489,10 @@ html,body{
 
 .cm-alert-box, .cm-confirm-box{
     width: 290px !important;
+}
+
+.cm-un-select{
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
 }

@@ -43,7 +43,7 @@
 <script>
     import electron from 'electron';
     import config from 'config';
-    import { fileExist, fileExistPromise, readFilePromise, saveFilePromise, writeFile } from '../js/utils/fs';
+    import { fileExist, readFilePromise } from '../js/utils/fs';
 
     const { ipcRenderer } = electron;
 

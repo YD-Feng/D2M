@@ -2,34 +2,59 @@ export default {
     "profile": {
         "defaultFields": [
             {
-                "name": "REVISION",
-                "type": "Integer",
-                "remark": "",
-                "chnname": "乐观锁"
-            },
-            {
-                "name": "CREATED_BY",
+                "name": "id",
                 "type": "IdOrKey",
                 "remark": "",
-                "chnname": "创建人"
+                "chnname": "ID",
+                "pk": true,
+                "notNull": true,
+                "autoIncrement": true,
+                "defaultValue": "",
+                "relationNoShow": true
             },
             {
-                "name": "CREATED_TIME",
-                "type": "DateTime",
-                "remark": "",
-                "chnname": "创建时间"
-            },
-            {
-                "name": "UPDATED_BY",
+                "name": "created_by",
                 "type": "IdOrKey",
                 "remark": "",
-                "chnname": "更新人"
+                "chnname": "创建人",
+                "pk": false,
+                "notNull": true,
+                "autoIncrement": false,
+                "defaultValue": "",
+                "relationNoShow": true
             },
             {
-                "name": "UPDATED_TIME",
+                "name": "creation_date",
                 "type": "DateTime",
                 "remark": "",
-                "chnname": "更新时间"
+                "chnname": "创建时间",
+                "pk": false,
+                "notNull": true,
+                "autoIncrement": false,
+                "defaultValue": "CURRENT_TIMESTAMP",
+                "relationNoShow": true
+            },
+            {
+                "name": "last_updated_by",
+                "type": "IdOrKey",
+                "remark": "",
+                "chnname": "最后更新人",
+                "pk": false,
+                "notNull": true,
+                "autoIncrement": false,
+                "defaultValue": "",
+                "relationNoShow": true
+            },
+            {
+                "name": "last_update_date",
+                "type": "DateTime",
+                "remark": "",
+                "chnname": "最后更新时间",
+                "pk": false,
+                "notNull": true,
+                "autoIncrement": false,
+                "defaultValue": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
+                "relationNoShow": true
             }
         ],
         "defaultHeaders": [
@@ -93,10 +118,10 @@ export default {
                     "code": "IdOrKey",
                     "apply": {
                         "MYSQL": {
-                            "type": "VARCHAR(32)"
+                            "type": "BIGINT(20)"
                         },
                         "ORACLE": {
-                            "type": "VARCHAR2(32)"
+                            "type": "BIGINT(20)"
                         }
                     }
                 },
@@ -300,138 +325,5 @@ export default {
                 }
             ]
         }
-    },
-    "previewData": {
-        "module": {
-            "name": "AUTH-用户安全"
-        },
-        "entity": {
-            "title": "AUTH_USER",
-            "fields": [
-                {
-                    "name": "ID",
-                    "type": "VARCHAR(32)",
-                    "remark": "",
-                    "chnname": "用户ID",
-                    "pk": true,
-                    "notNull": true,
-                    "autoIncrement": true,
-                    "defaultValue": "1"
-                },
-                {
-                    "name": "CODE",
-                    "type": "VARCHAR(32)",
-                    "remark": "",
-                    "chnname": "用户代码",
-                    "pk": false,
-                    "notNull": true,
-                    "autoIncrement": false,
-                    "defaultValue": "1"
-                },
-                {
-                    "name": "NAME",
-                    "type": "VARCHAR(32)",
-                    "remark": "",
-                    "chnname": "用户名"
-                },
-                {
-                    "name": "PASSWORD",
-                    "type": "VARCHAR(32)",
-                    "remark": "",
-                    "chnname": "密码"
-                },
-                {
-                    "name": "SALT",
-                    "type": "VARCHAR(32)",
-                    "remark": "",
-                    "chnname": "密码盐值"
-                },
-                {
-                    "name": "AVATAR",
-                    "type": "VARCHAR(32)",
-                    "remark": "",
-                    "chnname": "头像"
-                },
-                {
-                    "name": "ORG_ID",
-                    "type": "VARCHAR(32)",
-                    "remark": "",
-                    "chnname": "机构"
-                },
-                {
-                    "name": "EMAIL",
-                    "type": "VARCHAR(32)",
-                    "remark": "",
-                    "chnname": "邮件"
-                },
-                {
-                    "name": "PHONE",
-                    "type": "VARCHAR(32)",
-                    "remark": "",
-                    "chnname": "手机号"
-                },
-                {
-                    "name": "STATUS",
-                    "type": "VARCHAR(32)",
-                    "remark": "",
-                    "chnname": "状态"
-                },
-                {
-                    "name": "REVISION",
-                    "type": "VARCHAR(32)",
-                    "remark": "",
-                    "chnname": "乐观锁",
-                    "relationNoShow": false
-                },
-                {
-                    "name": "CREATED_BY",
-                    "type": "VARCHAR(32)",
-                    "remark": "",
-                    "chnname": "创建人",
-                    "relationNoShow": false
-                },
-                {
-                    "name": "CREATED_TIME",
-                    "type": "VARCHAR(32)",
-                    "remark": "",
-                    "chnname": "创建时间",
-                    "relationNoShow": false
-                },
-                {
-                    "name": "UPDATED_BY",
-                    "type": "VARCHAR(32)",
-                    "remark": "",
-                    "chnname": "更新人",
-                    "relationNoShow": false
-                },
-                {
-                    "name": "UPDATED_TIME",
-                    "type": "VARCHAR(32)",
-                    "remark": "",
-                    "chnname": "更新时间",
-                    "relationNoShow": false
-                }
-            ],
-            "chnname": "用户信息",
-            "indexs": [
-                {
-                    "name": "AUTH_USER_INDEX1",
-                    "isUnique": true,
-                    "fields": [
-                        "ID",
-                        "CODE"
-                    ]
-                },
-                {
-                    "name": "AUTH_USER_INDEX2",
-                    "isUnique": false,
-                    "fields": [
-                        "NAME",
-                        "PASSWORD"
-                    ]
-                }
-            ]
-        },
-        "separator": "/*SQL@Run*/"
     }
 };

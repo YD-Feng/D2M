@@ -163,6 +163,53 @@
 }
 
 /*数据表字段信息表格样式*/
+.tab-win-cont .custom-table-wrap{
+    border: 1px solid #caccd3;
+    overflow: auto;
+}
+.tab-win-cont .custom-table .tr{
+    white-space: nowrap;
+    font-size: 0;
+}
+.tab-win-cont .custom-table .th,
+.tab-win-cont .custom-table .td{
+    border-right: 1px solid #caccd3;
+    text-align: center;
+    height: 40px;
+    line-height: 30px;
+    padding: 3px 5px;
+    display: inline-block;
+    overflow: hidden;
+    font-size: 12px;
+    border-bottom: 1px solid #caccd3;
+}
+.tab-win-cont .custom-table .th:last-child,
+.tab-win-cont .custom-table .td:last-child{
+    border-right: none;
+}
+.tab-win-cont .custom-table .tr:last-child .th,
+.tab-win-cont .custom-table .tr:last-child .td{
+    border-bottom: none;
+}
+.tab-win-cont .custom-table .th{
+    font-weight: bold;
+    background-color: #dcdcdc;
+    height: 36px;
+}
+.tab-win-cont .custom-table .el-checkbox__label{
+    display: none;
+}
+.tab-win-cont .custom-table .icon-font{
+    color: #409eff;
+    font-weight: normal;
+}
+.tab-win-cont .custom-table .icon-bukejian, .tab-win-cont .custom-table-btn-wrap .icon-bukejian{
+    color: #970000;
+}
+.tab-win-cont .custom-table .disabled{
+    color: #b6b6b6;
+}
+
 .tab-win-cont .field-table th,
 .tab-win-cont .field-table td{
     padding: 0;
@@ -208,6 +255,11 @@
 .tab-win-cont .field-table .el-input--suffix .el-input__inner{
     padding-left: 12px;
 }
+.tab-win-cont .field-table .el-checkbox__label{
+    display: none;
+}
+
+
 .tab-win-cont .data-base-code .editor-wrap{
     height: 360px;
     overflow: auto;
@@ -271,3 +323,4 @@
 .tab-win-cont .tools-wrap .icon-font{
     font-size: 20px;
 }
+
