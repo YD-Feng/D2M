@@ -2342,6 +2342,9 @@
             };
 
             document.onmouseup = (e) => {
+                if (_this.resizeFlag && _this.tabWinList.length > 0 && _this.tabWinList[_this.curTabIndex].type == 2) {
+                    _this.$refs[`tabWin-${_this.curTabIndex}`][0].changeNetSize();
+                }
                 _this.resizeFlag = false;
             };
 
