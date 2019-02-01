@@ -1,6 +1,6 @@
 <template>
     <div class="editor-page"
-         :class="{'editor-page-side-bar-open': curSideBar.type != ''}">
+         :style="{paddingLeft: curSideBar.type != '' ? sideBarWidth : '21px'}">
         <div class="editor-page-tool-bar">
             <div class="fl">
                 <el-button
@@ -56,7 +56,8 @@
             </div>
         </div>
 
-        <div class="editor-page-side-bar">
+        <div class="editor-page-side-bar"
+             :style="{width: sideBarWidth, borderRight: curSideBar.type != '' ? '1px solid #9b9b9b' : 'none'}">
             <ul class="tab-list">
                 <li v-for="item in sideBarList"
                     class="item"
@@ -162,6 +163,8 @@
                         <span v-if="treeFlag"></span>
                     </div>
                 </div>
+
+                <div class="resize"></div>
             </div>
         </div>
 
@@ -679,7 +682,10 @@
                 changeList: [],
 
                 compareVersion: '@curProjectCache@',
-                projectVersionList: []
+                projectVersionList: [],
+
+                resizeFlag: false,
+                sideBarWidth: '230px'
             }
         },
         computed: {
@@ -2322,9 +2328,31 @@
                 }
             };
 
+            document.onmousedown = (e) => {
+                if (e.target.className == 'resize') {
+                    _this.resizeFlag = true;
+                }
+            };
+
+            document.onmousemove = (e) => {
+                if (_this.resizeFlag) {
+                    let x = e.clientX;
+                    _this.sideBarWidth = Math.min(Math.max(x, 230), 600) + 'px';
+                }
+            };
+
+            document.onmouseup = (e) => {
+                _this.resizeFlag = false;
+            };
+
             _this.getVersionList();
 
             window.vm = this;
+        },
+        destroyed () {
+            document.onmousedown = null;
+            document.onmousemove = null;
+            document.onmouseup = null;
         }
     };
 </script>

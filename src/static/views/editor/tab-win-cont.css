@@ -1,5 +1,6 @@
 .tab-win-cont{
     padding: 10px;
+    min-width: 832px;
 }
 .tab-win-cont .title{
     font-size: 14px;

@@ -132,6 +132,17 @@
     width: 100%;
     height: 100%;
 }
+.editor-page-side-bar .resize{
+    width: 3px;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 20;
+    cursor: ew-resize;
+}
+
+
 .editor-page-contain{
     height: 100%;
     position: relative;
