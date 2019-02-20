@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu } = require('electron');
 const path = require('path');
 const url = require('url');
 let window = null;
@@ -31,6 +31,35 @@ function createWindow () {
         resizable: true,
         show: false
     });
+
+    // 解决 macOs 快捷键复制的问题 添加菜单
+    if (process.platform === 'darwin') {
+        const template = [
+            {
+                label: "Application",
+                submenu: [
+                    { label: "Quit", accelerator: "Command+Q", click: function() { app.quit(); }}
+                ]
+            },
+            {
+                label: 'Edit',
+                submenu: [
+                    { role: 'undo' },
+                    { role: 'redo' },
+                    { type: 'separator' },
+                    { role: 'cut' },
+                    { role: 'copy' },
+                    { role: 'paste' },
+                    { role: 'pasteandmatchstyle' },
+                    { role: 'delete' },
+                    { role: 'selectall' }
+                ]
+            }
+        ];
+        Menu.setApplicationMenu(Menu.buildFromTemplate(template))
+    } else {
+        Menu.setApplicationMenu(null)
+    }
 
     if (process.env.NODE_ENV === 'dev') {
         window.loadURL('http://127.0.0.1:3000');

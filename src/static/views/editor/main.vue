@@ -2323,6 +2323,10 @@
                     }
                 }
 
+                if (e.altKey && e.metaKey && e.code === 'KeyI') {
+                    ipcRenderer.sendSync('windowOrder', 'openDevTools');
+                }
+
                 if (e.code === 'F12') {
                     ipcRenderer.sendSync('windowOrder', 'openDevTools');
                 }
