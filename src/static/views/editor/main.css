@@ -132,14 +132,34 @@
     width: 100%;
     height: 100%;
 }
+.editor-page-side-bar .cont *{
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
 .editor-page-side-bar .resize{
-    width: 3px;
+    width: 4px;
     height: 100%;
     position: absolute;
     top: 0;
     right: 0;
     z-index: 20;
     cursor: ew-resize;
+}
+.editor-page-side-bar .resize:hover{
+    box-shadow: 2px 0 1px #a9e4ff;
+}
+.editor-page-side-bar .resize-mask{
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 19;
+    display: none;
+}
+.editor-page-side-bar .resize:hover+.resize-mask{
+    display: block;
 }
 
 

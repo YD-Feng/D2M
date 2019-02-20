@@ -165,6 +165,7 @@
                 </div>
 
                 <div class="resize"></div>
+                <div class="resize-mask"></div>
             </div>
         </div>
 
