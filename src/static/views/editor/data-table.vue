@@ -415,14 +415,17 @@
                             <pre ref="code" v-if="codeFlag" language="SQL" class="pre">{{curCode}}</pre>
                         </div>
 
-                        <span class="cm-text-red lh30px"
-                              v-if="curCodeType == 'createTableTemplate' || curCodeType == 'deleteTableTemplate' || curCodeType == 'createIndexTemplate'">
-                            该脚本为全量脚本
-                        </span>
-                        <span class="cm-text-blue lh30px"
-                              v-else>
-                            该脚本为差异化脚本
-                        </span>
+                        <div class="lh30px">
+                            <span class="cm-text-red lh30px"
+                                  v-if="curCodeType == 'createTableTemplate' || curCodeType == 'deleteTableTemplate' || curCodeType == 'createIndexTemplate'">
+                                该脚本为全量脚本
+                            </span>
+                            <span class="cm-text-blue lh30px"
+                                  v-else>
+                                该脚本为差异化脚本
+                            </span>
+                            （<el-button type="text" style="vertical-align: baseline; padding: 0;" @click="handleCopyCode">点击复制到粘贴板</el-button>）
+                        </div>
                     </td>
                 </tr>
             </table>
@@ -433,9 +436,12 @@
 </template>
 
 <script>
+    import electron from 'electron';
     import hljs from 'highlight.js';
     import { getCodeByDataTable } from './../../js/utils/json2code';
     import deepClone from './../../js/utils/deep-clone';
+
+    const clipboard = electron.clipboard;
 
     module.exports = {
         replace: true,
@@ -862,6 +868,12 @@
                         hljs.highlightBlock(_this.$refs.code);
                     });
                 });
+            },
+
+            handleCopyCode () {
+                let _this = this;
+                clipboard.writeText(_this.curCode);
+                _this.$message.success('代码经成功复制到粘贴板');
             }
         },
         created () {
