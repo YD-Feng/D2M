@@ -47,3 +47,6 @@ mac 平台客户端打包<br>
 npm run package-mac
 ```
 <br>
+
+注意：打包命令在对应平台下，才能打相应平台的包（如：windows 系统下只能打 windows 的包，mac 下才能打 mac 包）
+<br><br><br>
