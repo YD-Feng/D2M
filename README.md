@@ -24,22 +24,26 @@ npm install
 安装项目依赖包<br><br><br>
 
 然后下面是一些常用命令及其说明：
+运行开发模式客户端<br>
 ```
 npm run dev
 ```
-运行开发模式客户端<br><br>
+<br>
 
+windows 平台客户端打包<br>
 ```
 npm run package-win
 ```
-windows 平台客户端打包<br><br>
+<br>
 
+linux 平台客户端打包<br>
 ```
 npm run package-linux
 ```
-linux 平台客户端打包<br><br>
+<br>
 
+mac 平台客户端打包<br>
 ```
 npm run package-mac
 ```
-mac 平台客户端打包<br><br>
+<br>
