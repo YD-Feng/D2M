@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, Menu } = require('electron');
 const path = require('path');
 const url = require('url');
+const mysql = require('mysql');
 let window = null;
 
 app.on('ready', createWindow);
@@ -124,6 +125,78 @@ function createWindow () {
         }
 
         event.returnValue = 'setSuccess';
+    });
+
+    //解析 MySQL 数据库，返回解析结果
+    ipcMain.on('analyseMySqlDb', (event, args) => {
+        let obj = {
+                host: args.host, //IP
+                port: args.port, //端口
+                database: args.databaseName, //库名
+                user: args.user, //用户名
+                password: args.password, //密码
+                multipleStatements: true // 支持执行多条 sql 语句
+            },
+            connPool = mysql.createPool(obj),
+            errFn = (err) => {
+                event.returnValue = {
+                    isErr: true,
+                    errMsg: '解析数据库出错！' + err.message
+                };
+            };
+
+        connPool.getConnection((err, connection) => {
+            if (err) {
+                errFn(err);
+                return;
+            }
+            //获取数据库的所有表名
+            let tableSQL = `select * from information_schema.tables where table_schema = '${obj.database}'`;
+
+            connection.query(tableSQL, (err, result) => {
+                if (err) {
+                    errFn(err);
+                    return;
+                }
+
+                let columnSQL = '',
+                    obj = {
+                        isErr: false,
+                        tables: [],
+                        columns: []
+                    };
+
+                result.forEach((item, index) => {
+                    obj.tables.push({
+                        name: item.TABLE_NAME,
+                        chnname: item.TABLE_COMMENT
+                    });
+                    columnSQL += `show full columns from ${item.TABLE_NAME}; `;
+                });
+
+                if (columnSQL != '') {
+                    //执行多条sql语句，获取数据库里的所有表的建表语句
+                    connection.query(columnSQL, (err, result) => {
+                        if (err) {
+                            errFn(err);
+                            return;
+                        }
+
+                        obj.columns = result;
+                        event.returnValue = obj;
+                        connection.release();//释放链接
+                    });
+
+                } else {
+                    event.returnValue = {
+                        isErr: false,
+                        tables: [],
+                        columns: []
+                    };
+                    connection.release();//释放链接
+                }
+            });
+        });
     });
 
     ipcMain.on('getWinIsMaxSize', (event, args) => {

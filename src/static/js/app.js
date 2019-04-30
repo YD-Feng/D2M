@@ -37,7 +37,7 @@ const store = new Vuex.Store({
 });
 
 //自定义指令
-var nodeList = [],
+let nodeList = [],
     ctx = '@clickOutside',
     mouseDownEvent;
 
@@ -54,8 +54,8 @@ document.addEventListener('mouseup', function (e) {
 //点击元素以外区域时触发回调函数指令
 Vue.directive('clickOutside', {
     bind (el, binding, vnode) {
-        var id = nodeList.push(el) - 1;
-        var documentHandler = function (mouseup = {}, mousedown = {}) {
+        let id = nodeList.push(el) - 1;
+        let documentHandler = function (mouseup = {}, mousedown = {}) {
             if (!vnode.context || !mouseup.target || !mousedown.target ||
                 el.contains(mouseup.target) ||
                 (vnode.context.popperElm &&
@@ -93,7 +93,7 @@ Vue.directive('clickOutside', {
     }
 });
 
-var autoKey = 1,
+let autoKey = 1,
     autoHeightTargetMap = {};
 
 //关系图Vm全局缓存
@@ -101,12 +101,12 @@ window.rdVmCache = {};
 
 window.addEventListener('resize', function () {
     var winInnerHeight = window.innerHeight;
-    for (var key in autoHeightTargetMap) {
+    for (let key in autoHeightTargetMap) {
         autoHeightTargetMap[key].el.style['height'] = (winInnerHeight - autoHeightTargetMap[key].delHeight) + 'px';
         autoHeightTargetMap[key].el.style['max-height'] = (winInnerHeight - autoHeightTargetMap[key].delHeight) + 'px';
     }
 
-    for (var key in window.rdVmCache) {
+    for (let key in window.rdVmCache) {
         window.rdVmCache[key].changeNetSize();
     }
 });

@@ -56,6 +56,13 @@
                 <br>
                 <el-button
                     type="text"
+                    @click="openDbDialog()">
+                    <i class="icon-font icon-shujuku"></i>
+                    解析DB生成项目
+                </el-button>
+                <br>
+                <el-button
+                    type="text"
                     @click="handleOpenProject()">
                     <i class="icon-font icon-dakai"></i>
                     打开项目
@@ -90,7 +97,7 @@
                             <div class="text-center">
                                 <el-button
                                     type="text"
-                                    @click="handleOpenSysDialog">
+                                    @click="handleOpenSysDialog('elDialog')">
                                     ...
                                 </el-button>
                             </div>
@@ -114,11 +121,115 @@
                     </el-input>
                 </div>
 
-                <div class="text-center">
+                <div class="text-center pb5px">
                     <el-button
                         type="primary"
                         style="width: 60px;"
                         @click="handleCreateProject">
+                        确定
+                    </el-button>
+
+                    <el-button
+                        type="default"
+                        style="width: 60px;"
+                        @click="closeDialog">
+                        取消
+                    </el-button>
+                </div>
+            </div>
+        </el-dialog>
+
+        <el-dialog
+            title="解析数据库生成项目"
+            custom-class="home-page-dialog-430px"
+            :visible.sync="dbDialog.visible">
+            <div class="pl20px pr20px pt10px">
+                <div class="pb20px lh30px">
+                    <label class="label">库类型</label>
+                    <el-select
+                        v-model="dbDialog.dbType"
+                        style="width: 260px;"
+                        placeholder="请选择">
+                        <el-option
+                            v-for="(value, key) in dbType"
+                            :key="key"
+                            :label="value"
+                            :value="key">
+                        </el-option>
+                    </el-select>
+                </div>
+                <div class="pb20px lh30px">
+                    <label class="label">HOST</label>
+                    <el-input
+                        v-model.trim="dbDialog.host"
+                        style="width: 260px;">
+                    </el-input>
+                </div>
+
+                <div class="pb20px lh30px">
+                    <label class="label">PORT</label>
+                    <el-input
+                        v-model.trim="dbDialog.port"
+                        style="width: 260px;">
+                    </el-input>
+                </div>
+
+                <div class="pb20px lh30px">
+                    <label class="label">数据库</label>
+                    <el-input
+                        v-model.trim="dbDialog.databaseName"
+                        style="width: 260px;">
+                    </el-input>
+                </div>
+
+                <div class="pb20px lh30px">
+                   <label class="label">用户名</label>
+                    <el-input
+                        v-model.trim="dbDialog.user"
+                        style="width: 260px;">
+                    </el-input>
+                </div>
+
+                <div class="pb20px lh30px">
+                    <label class="label">密码</label>
+                    <el-input
+                        type="password"
+                        v-model.trim="dbDialog.password"
+                        style="width: 260px;">
+                    </el-input>
+                </div>
+
+                <div class="pb20px lh30px">
+                    <label class="label">项目名称</label>
+                    <el-input
+                        v-model.trim="dbDialog.projectName"
+                        style="width: 260px;">
+                    </el-input>
+                </div>
+
+                <div class="pb20px lh30px">
+                    <label class="label">保存目录</label>
+                    <el-input
+                        v-model.trim="dbDialog.projectDir"
+                        readonly
+                        style="width: 260px; vertical-align: middle;">
+                        <template slot="append">
+                            <div class="text-center">
+                                <el-button
+                                    type="text"
+                                    @click="handleOpenSysDialog('dbDialog')">
+                                    ...
+                                </el-button>
+                            </div>
+                        </template>
+                    </el-input>
+                </div>
+
+                <div class="text-center pb5px">
+                    <el-button
+                        type="primary"
+                        style="width: 60px;"
+                        @click="handleAnalyseDb">
                         确定
                     </el-button>
 
@@ -149,16 +260,47 @@
         data () {
             return {
                 historyList: [],
+
                 elDialog: {
                     visible: false,
                     projectName: '',
                     projectDir: '',
                     rdsName: '',
                     databaseName: ''
+                },
+
+                dbDialog: {
+                    visible: false,
+                    dbType: 'mysql', //数据库类型，mysql，SqlServer
+                    host: '', //IP
+                    port: '', //端口
+                    databaseName: '', //库名
+                    user: '', //用户名
+                    password: '', //密码
+                    projectName: '', //项目名称
+                    projectDir: '' //保存目录
+                },
+
+                dbType: {
+                    mysql: 'MYSQL',
+                    oracle: 'ORACLE'
                 }
             }
         },
         methods: {
+            openDbDialog () {
+                let _this = this;
+                _this.dbDialog.dbType = 'mysql';
+                _this.dbDialog.host = '';
+                _this.dbDialog.port = '';
+                _this.dbDialog.databaseName = '';
+                _this.dbDialog.user = '';
+                _this.dbDialog.password = '';
+                _this.dbDialog.projectName = '';
+                _this.dbDialog.projectDir = '';
+                _this.dbDialog.visible = true;
+            },
+
             openCreateDialog () {
                 let _this = this;
                 _this.elDialog.projectName = '';
@@ -170,9 +312,10 @@
 
             closeDialog () {
                 this.elDialog.visible = false;
+                this.dbDialog.visible = false;
             },
 
-            handleOpenSysDialog () {
+            handleOpenSysDialog (sourceDialog) {
                 let _this = this;
 
                 dialog.showOpenDialog({
@@ -181,7 +324,7 @@
                     buttonLabel: '确定'
                 }, (result) => {
                     if (result) {
-                        _this.elDialog.projectDir = result[0];
+                        _this[sourceDialog].projectDir = result[0];
                     }
                 });
             },
@@ -189,35 +332,187 @@
             handleCreateProject () {
                 let _this = this;
 
-                if (_this.elDialog.projectName === '') {
-                    _this.$message.error('项目名称不能为空');
+                try {
+
+                    if (_this.elDialog.projectName === '') {
+                        throw {message: '项目名称不能为空'};
+                    }
+
+                    if (_this.elDialog.projectDir === '') {
+                        throw {message: '保存目录不能为空'};
+                    }
+
+                    if (_this.elDialog.rdsName === '') {
+                        throw {message: '实例名称不能为空'};
+                    }
+
+                    if (_this.elDialog.databaseName === '') {
+                        throw {message: '数据库名不能为空'};
+                    }
+
+                } catch (err) {
+                    _this.$message.error(err.message);
                     return;
                 }
 
-                if (_this.elDialog.projectDir === '') {
-                    _this.$message.error('项目名称不能为空');
+                let projectData = {
+                    source: {
+                        rdsName: _this.elDialog.rdsName,
+                        databaseName: _this.elDialog.databaseName
+                    },
+                    modules: [],
+                    dataTypeDomains: deepClone(defaultData.profile.defaultDataTypeDomains)
+                };
+
+                _this.createProject(projectData, {
+                    projectDir: _this.elDialog.projectDir,
+                    projectName: _this.elDialog.projectName
+                });
+            },
+
+            handleAnalyseDb () {
+                let _this = this;
+
+                try {
+
+                    if (_this.dbDialog.dbType === '') {
+                        throw {message: '请选择库类型'};
+                    }
+
+                    if (_this.dbDialog.host === '') {
+                        throw {message: 'HOST不能为空'};
+                    }
+
+                    if (_this.dbDialog.port === '') {
+                        throw {message: 'PORT不能为空'};
+                    }
+
+                    if (_this.dbDialog.databaseName === '') {
+                        throw {message: '数据库不能为空'};
+                    }
+
+                    if (_this.dbDialog.user === '') {
+                        throw {message: '用户名不能为空'};
+                    }
+
+                    if (_this.dbDialog.password === '') {
+                        throw {message: '密码不能为空'};
+                    }
+
+                    if (_this.dbDialog.projectName === '') {
+                        throw {message: '项目名称不能为空'};
+                    }
+
+                    if (_this.dbDialog.projectDir === '') {
+                        throw {message: '保存目录不能为空'};
+                    }
+
+                } catch (err) {
+                    _this.$message.error(err.message);
                     return;
                 }
 
-                if (_this.elDialog.rdsName === '') {
-                    _this.$message.error('实例名称不能为空');
+                let result = _this.dbDialog.dbType == 'mysql' ? _this.transMySqlAnalysis() : _this.transMySqlAnalysis();
+
+                if (!result) {
+                    //数据库解析失败，data 返回 null，直接结束
                     return;
                 }
 
-                if (_this.elDialog.databaseName === '') {
-                    _this.$message.error('数据库名不能为空');
-                    return;
-                }
+                let projectData = {
+                    source: {
+                        rdsName: 'common',
+                        databaseName: _this.dbDialog.databaseName
+                    },
+                    modules: [result.module],
+                    dataTypeDomains: result.dataTypeDomains
+                };
 
-                let projectPath = path.join(_this.elDialog.projectDir, _this.elDialog.projectName + '.json'),
-                    projectData = {
-                        source: {
-                            rdsName: _this.elDialog.rdsName,
-                            databaseName: _this.elDialog.databaseName
+                _this.createProject(projectData, {
+                    projectDir: _this.dbDialog.projectDir,
+                    projectName: _this.dbDialog.projectName
+                });
+            },
+
+            //连接mysql数据库，分析表结构，返回处理结果
+            transMySqlAnalysis () {
+                let _this = this,
+                    analyseResult = ipcRenderer.sendSync('analyseMySqlDb', _this.dbDialog),
+                    module = {
+                        name: _this.dbDialog.databaseName,
+                        chnname: '数据库',
+                        remark: '',
+                        entities: [],
+                        graphCanvas: {
+                            nodes: [],
+                            edges: []
                         },
-                        modules: [],
-                        dataTypeDomains: deepClone(defaultData.profile.defaultDataTypeDomains),
+                        associations: []
+                    },
+                    dataTypeDomains = deepClone(defaultData.profile.defaultDataTypeDomains);
+
+                if (!analyseResult.isErr) {
+                    analyseResult.tables.forEach((item, index) => {
+                        let entity = {
+                            title: item.name,
+                            chnname: item.chnname,
+                            remark: '',
+                            fields: [],
+                            indexs: [],
+                            headers: deepClone(defaultData.profile.defaultHeaders)
+                        };
+
+                        // MySQL Key值（PRI, UNI, MUL）的含义：PRI主键约束，UNI唯一约束，MUL可以重复
+                        analyseResult.columns[index].forEach(column => {
+                            let type = column.Type.replace(/\(/g,'_').replace(/\)/g,'').replace(/\,/g,''),
+                                field = {
+                                    chnname: column.Comment, //名称
+                                    name: column.Field, //代码
+                                    type: type, //类型
+                                    dataType: '', //数据库类型
+                                    remark: '', //备注
+                                    pk: (column.Key == 'PRI' || column.Key == 'UNI') ? true : false, //主键
+                                    notNull: column.Null == 'NO' ? false : true, //非空
+                                    autoIncrement: column.Extra == 'auto_increment' ? true : false, //自增
+                                    defaultValue: column.Default, //默认值
+                                    relationNoShow: true //关系图
+                                },
+                                findIndex = dataTypeDomains.datatype.findIndex(item => item.name == type);
+
+                            if (findIndex == -1) {
+                                dataTypeDomains.datatype.push({
+                                    name: type,
+                                    code: type,
+                                    apply: {
+                                        MYSQL: {
+                                            type: column.Type.toUpperCase()
+                                        },
+                                        ORACLE: {
+                                            type: ''
+                                        }
+                                    }
+                                });
+                            }
+
+                            entity.fields.push(field);
+                        });
+
+                        module.entities.push(entity);
+                    });
+
+                    return {
+                        module: module,
+                        dataTypeDomains: dataTypeDomains
                     };
+                } else {
+                    _this.$message.error(analyseResult.errMsg);
+                    return null;
+                }
+            },
+
+            createProject (projectData, opts) {
+                let _this = this,
+                    projectPath = path.join(opts.projectDir, opts.projectName + '.json');
 
                 if ( fileExist(projectPath) ) {
                     _this.$message.error('创建项目失败，该项目已经存在了！');
@@ -228,7 +523,7 @@
                 saveFileSync(projectData, projectPath);
 
                 _this.historyList.unshift({
-                    projectName: _this.elDialog.projectName,
+                    projectName: opts.projectName,
                     projectPath: projectPath
                 });
 
@@ -245,9 +540,10 @@
 
                 _this.closeDialog();
 
-                _this.$store.commit('setProjectName', _this.elDialog.projectName);
+                _this.$store.commit('setProjectName', opts.projectName);
                 _this.$store.commit('setProjectPath', projectPath);
                 _this.$store.commit('setProjectData', projectData);
+                _this.$store.commit('setCompareData', projectData);
                 _this.$router.push({
                     path: '/editor'
                 });
@@ -494,6 +790,9 @@
         position: relative;
         right: -1px;
     }
+    .home-page .action .icon-shujuku:before{
+        right: 0;
+    }
     .home-page .action .el-button{
         font-size: 14px;
     }
@@ -509,5 +808,12 @@
 
     .home-page-dialog-430px{
         width: 430px;
+    }
+    .home-page-dialog-430px .label{
+        display: inline-block;
+        width: 55px;
+        margin-right: 10px;
+        text-align: right;
+        vertical-align: bottom;
     }
 </style>

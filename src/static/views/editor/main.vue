@@ -108,6 +108,7 @@
                                 <span class="pr10px">{{ node.label }}</span>
                             </div>
                         </el-tree>
+                        <div v-show="curSideBar.type == 'modules'" class="h40px"></div>
 
                         <el-tree
                             ref="dataConfigTree"
@@ -158,7 +159,6 @@
                                 @see-compare="openCompareTabWin">
                             </version-step>
                         </div>
-
 
                         <span v-if="treeFlag"></span>
                     </div>
@@ -1606,6 +1606,7 @@
                     if (renameTab) {
                         renameTab.tabName = tabName;
                     }
+
                     _this.changeList = checkVersionData(_this.projectData, _this.compareData);
                     _this.refreshTabWin();
                 }
@@ -1633,7 +1634,7 @@
                     verNum = 0;
 
                 _this.projectVersionList.forEach((versionName) => {
-                    var num = versionName.replace('v', '').replace(/\./g, '') * 1;
+                    let num = versionName.replace('v', '').replace(/\./g, '') * 1;
                     if (verNum < num) {
                         verNum = num;
                         let arr = versionName.replace('v', '').split('.');
@@ -2057,7 +2058,7 @@
                 let _this = this;
 
                 if (index !== undefined) {
-                    var curTab = _this.tabWinList[index];
+                    let curTab = _this.tabWinList[index];
                     _this.doSave(curTab, index);
 
                     if (!notSaveFile) {
@@ -2199,7 +2200,7 @@
                     let verNum = [_this.versionDialog.vCodeA * 1, _this.versionDialog.vCodeB * 1, _this.versionDialog.vCodeC * 1].join('') * 1;
 
                     _this.projectVersionList.forEach((versionName) => {
-                        var num = versionName.replace('v', '').replace(/\./g, '') * 1;
+                        let num = versionName.replace('v', '').replace(/\./g, '') * 1;
                         if (verNum == num) {
                             throw {message: '此版本号已存在，不可用使用重复的版本号'};
                         } else if (verNum < num) {
