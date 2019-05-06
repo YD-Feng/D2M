@@ -12,8 +12,7 @@
                     <td class="pl5px pb20px pr20px">
                         <el-input
                             v-model.trim="curDataType.apply[item.code].type"
-                            style="width: 100%;"
-                            @input="handleChange">
+                            style="width: 100%;">
                         </el-input>
                     </td>
                 </tr>
@@ -25,62 +24,62 @@
 <script>
     module.exports = {
         replace: true,
-        props: ['dataBaseList'],
+        props: ['value', 'dataBaseList'],
         data () {
             return {
-                curDataType: null,
-                initFlag: false,
-                hasChange: false
+                curDataType: {
+                    name: '',
+                    code: '',
+                    apply: {
+                        MYSQL: {
+                            type: ''
+                        },
+                        ORACLE: {
+                            type: ''
+                        }
+                    }
+                }
             };
         },
         watch: {
             dataBaseList () {
                 let _this = this;
 
-                if (_this.initFlag) {
-                    _this.dataBaseList.forEach((item) => {
-                        if (!_this.curDataType.apply[item.code]) {
-                            _this.curDataType.apply[item.code] = {
-                                type: ''
-                            };
-                        }
-                    });
-                }
-            }
-        },
-        methods: {
-            setData (curDataType) {
-                let _this = this;
-
-                if (!curDataType.apply) {
-                    curDataType.apply = {};
-                }
-
                 _this.dataBaseList.forEach((item) => {
-                    if (!curDataType.apply[item.code]) {
-                        curDataType.apply[item.code] = {
+                    if (!_this.curDataType.apply[item.code]) {
+                        _this.curDataType.apply[item.code] = {
                             type: ''
                         };
                     }
                 });
-
-                _this.curDataType = curDataType;
-                _this.$nextTick(() => {
-                    _this.initFlag = true;
-                });
             },
+            value: {
+                handler (newVal, oldVal) {
+                    let _this = this,
+                        curDataType = newVal;
 
-            getData () {
-                return this.curDataType;
+                    if (!curDataType.apply) {
+                        curDataType.apply = {};
+                    }
+
+                    _this.dataBaseList.forEach((item) => {
+                        if (!curDataType.apply[item.code]) {
+                            curDataType.apply[item.code] = {
+                                type: ''
+                            };
+                        }
+                    });
+
+                    _this.curDataType = curDataType;
+                },
+                deep: true,
+                immediate: true
             },
-
-            handleChange () {
-                let _this = this;
-
-                if (_this.initFlag && !_this.hasChange) {
-                    _this.hasChange = true;
-                    _this.$emit('data-change');
-                }
+            curDataType: {
+                handler (newVal, oldVal) {
+                    this.$emit('update:value', newVal);
+                },
+                deep: true
             }
         }
     };

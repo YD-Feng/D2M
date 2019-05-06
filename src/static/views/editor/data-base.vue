@@ -11,8 +11,7 @@
                     </td>
                     <td class="pl5px pb20px pr10px">
                         <el-checkbox
-                            v-model.trim="curDataBase.fileShow"
-                            @change="handleChange">
+                            v-model="curDataBase.fileShow">
                         </el-checkbox>
                         <span class="ml5px cm-text-green">
                             (勾选此项，将会在生成的文档中显示该数据库所对应的字段类型)
@@ -26,12 +25,14 @@
                     </td>
                     <td class="pl5px pb20px pr10px">
                         <el-checkbox
-                            v-model.trim="curDataBase.defaultDatabase"
-                            @change="handleChange">
+                            :disabled="curDataBase.defaultDatabase"
+                            v-model="curDataBase.defaultDatabase"
+                            @change="handleDefaultDbChange">
                         </el-checkbox>
                         <span class="ml5px cm-text-green">
                             (勾选此项，将会在数据表和关系图中显示默认数据库的数据类型)
                         </span>
+                        <span class="ml5px cm-text-red">注意：只能勾选，不能取消，如果切换默认数据库，请去编辑其他数据库时勾选此项，则本数据库的勾选状态自动取消，因为默认数据库有且只有一个</span>
                     </td>
                 </tr>
                 <tr>
@@ -59,7 +60,6 @@
                                 ref="mainEditor"
                                 v-model="curDataBase[curTab]"
                                 @init="editorInit"
-                                @input="handleEditorChange"
                                 lang="mysql"
                                 theme="chrome"
                                 :options="editorOptions"
@@ -357,11 +357,24 @@
         components: {
             editor
         },
+        props: ['value'],
         data () {
             return {
-                curDataBase: null,
-                initFlag: false,
-                hasChange: false,
+                curDataBase: {
+                    code: '',
+                    template: '',
+                    fileShow: true,
+                    defaultDatabase: true,
+                    createTableTemplate: '',
+                    deleteTableTemplate: '',
+                    rebuildTableTemplate: '',
+                    createFieldTemplate: '',
+                    updateFieldTemplate: '',
+                    deleteFieldTemplate: '',
+                    createIndexTemplate: '',
+                    deleteIndexTemplate: '',
+                    updateTableComment: ''
+                },
 
                 keyNameMap: {
                     createTableTemplate: '创建数据表',
@@ -376,7 +389,6 @@
                 },
 
                 curTab: 'createTableTemplate',
-                changeTabFlag: 0,
 
                 editorOptions: {
                     fontSize: 14
@@ -405,67 +417,22 @@
             };
         },
         watch: {
-            curTab () {
-                if (this.initFlag) {
-                    this.changeTabFlag = 2;
-                }
+            value: {
+                handler (newVal, oldVal) {
+                    this.curDataBase = newVal;
+                },
+                deep: true,
+                immediate: true
+            },
+            curDataBase: {
+                handler (newVal, oldVal) {
+                    this.$emit('update:value', newVal);
+                },
+                deep: true
             }
         },
         methods: {
-            setData (curDataBase) {
-                let _this = this;
-
-                _this.curDataBase = {
-                    code: curDataBase.code,
-                    template: curDataBase.template,
-                    fileShow: !!curDataBase.fileShow,
-                    defaultDatabase: !!curDataBase.defaultDatabase,
-                    createTableTemplate: curDataBase.createTableTemplate,
-                    deleteTableTemplate: curDataBase.deleteTableTemplate,
-                    rebuildTableTemplate: curDataBase.rebuildTableTemplate,
-                    createFieldTemplate: curDataBase.createFieldTemplate,
-                    updateFieldTemplate: curDataBase.updateFieldTemplate,
-                    deleteFieldTemplate: curDataBase.deleteFieldTemplate,
-                    createIndexTemplate: curDataBase.createIndexTemplate,
-                    deleteIndexTemplate: curDataBase.deleteIndexTemplate,
-                    updateTableComment: curDataBase.updateTableComment
-                };
-
-                _this.$nextTick(() => {
-                    _this.initFlag = true;
-                });
-            },
-
-            getData () {
-                return this.curDataBase;
-            },
-
-            handleChange () {
-                let _this = this;
-
-                if (_this.initFlag && !_this.hasChange) {
-                    _this.hasChange = true;
-                    _this.$emit('data-change');
-                }
-            },
-            handleEditorChange () {
-                let _this = this;
-
-                /*
-                * 切换 tab 的时候，editor 的内容切换会触发2次 handleEditorChange，但其实切换 tab 并没有修改任何内容
-                * 因此引入了一个 changeTabFlag 属性来对 handleEditorChange 事件逻辑做特殊处理
-                * */
-                if (_this.initFlag && !_this.hasChange && _this.changeTabFlag == 0) {
-                    _this.hasChange = true;
-                    _this.$emit('data-change');
-                }
-
-                if (_this.changeTabFlag != 0) {
-                    _this.changeTabFlag--;
-                }
-            },
-
-            editorInit: function () {
+            editorInit () {
                 require('brace/ext/language_tools');
                 require('brace/mode/mysql');
                 require('brace/mode/javascript');
@@ -518,7 +485,6 @@
                         break;
                 }
 
-                //_this.$refs.mainEditor.editor.setValue(tpl);
                 _this.closeDialog();
             },
             handlePreview () {
@@ -548,6 +514,10 @@
                         hljs.highlightBlock(_this.$refs.defaultCode);
                     });
                 });
+            },
+
+            handleDefaultDbChange (val) {
+                this.$emit('default-db-change', this.curDataBase.code, val);
             }
         }
     };

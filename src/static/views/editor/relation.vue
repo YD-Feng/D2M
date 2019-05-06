@@ -31,18 +31,15 @@
 </template>
 
 <script>
-    import electron from 'electron';
     import G6 from '@antv/g6';
 
     module.exports = {
         replace: true,
-        props: ['projectData', 'moduleIndex'],
+        props: ['value', 'projectData', 'moduleIndex'],
         data () {
             return {
-                curGraphCanvas: null,
-                curAssociations: [],
+                curModule: null,
                 initFlag: false,
-                hasChange: false,
 
                 net: null,
                 netMode: 'edit',
@@ -78,57 +75,56 @@
                 return arr;
             }
         },
-        methods: {
-            setData (data, matrix) {
-                let _this = this;
+        watch: {
+            value: {
+                handler (newVal, oldVal) {
+                    let _this = this;
 
-                _this.curGraphCanvas = data.graphCanvas;
-                _this.curAssociations = data.associations;
+                    _this.curModule = newVal;
 
-                _this.$nextTick(() => {
-                    if (_this.net) {
-                        _this.net.changeData(_this.curGraphCanvas.nodes, _this.curGraphCanvas.edges);
-                        if (matrix) {
-                            _this.net.updateMatrix(matrix);
-                        } else {
-                            _this.net.focusPoint({
-                                x: _this.curGraphCanvas.nodes[0].x,
-                                y: _this.curGraphCanvas.nodes[0].y
-                            });
+                    _this.$nextTick(() => {
+                        if (!_this.net) {
+                            _this.init();
                         }
-                    } else {
-                        _this.init();
-                    }
-                });
+                    });
+                },
+                deep: true,
+                immediate: true
             },
-
-            getData () {
-                let _this = this,
-                    source =_this.net.save().source;
-
-                _this.getAssociations(source);
-
-                return {
-                    graphCanvas: source,
-                    associations: _this.curAssociations,
-                    matrix: _this.net.getMatrix()
-                };
-            },
-
-            handleChange () {
+            curModule: {
+                handler (newVal, oldVal) {
+                    this.$emit('update:value', newVal);
+                },
+                deep: true
+            }
+        },
+        methods: {
+            setMatrix (matrix) {
                 let _this = this;
 
-                if (_this.initFlag && !_this.hasChange) {
-                    _this.hasChange = true;
-                    _this.$emit('data-change');
+                if (!_this.net) {
+                    _this.init();
                 }
+
+                if (matrix) {
+                    //如果是切换窗口操作，而不是新开窗口，则还原到切换窗口前的关系图展示位置
+                    _this.net.updateMatrix(matrix);
+                    _this.netScale = _this.net.getScale();
+                    _this.net.refresh();
+                }
+            },
+
+            getMatrix () {
+                return this.net.getMatrix();
             },
 
             //分析连接线得到数据表的关联关系
             getAssociations (source) {
                 let _this = this;
 
-                _this.curAssociations = source.edges.map((edge) => {
+                _this.curModule.graphCanvas = source;
+
+                _this.curModule.associations = source.edges.map((edge) => {
                     let sourceNode = source.nodes.filter((node) => {
                             return node.id == edge.source;
                         })[0],
@@ -205,7 +201,7 @@
                 });
 
                 _this.bindNetEvent();
-                _this.net.source(_this.curGraphCanvas.nodes, _this.curGraphCanvas.edges);
+                _this.net.source(_this.curModule.graphCanvas.nodes, _this.curModule.graphCanvas.edges);
                 _this.net.render();
             },
             //注册节点
@@ -227,7 +223,7 @@
                                 return entity.title === model.title;
                             })[0],
 
-                            tableFromAssociations = _this.curAssociations.filter((item) => {
+                            tableFromAssociations = _this.curModule.associations.filter((item) => {
                                 return item.to && item.from.entity === table.title
                             }),
 
@@ -423,7 +419,9 @@
                 });
 
                 _this.net.on('mousewheel', () => {
-                    _this.netScale = _this.net.getScale();
+                    setTimeout(() => {
+                        _this.netScale = _this.net.getScale();
+                    }, 0);
                 });
 
                 _this.net.on('afterrender', (e) => {
@@ -455,7 +453,7 @@
 
                     if (e.shape && e.shape.hasClass('anchor-point')) {
                         setTimeout(() => {
-                            let source =_this.net.save().source;
+                            let source = _this.net.save().source;
                             _this.getAssociations(source);
                             _this.net.changeData(source.nodes, source.edges);
                         }, 0);
@@ -497,26 +495,26 @@
                             if (e.keyCode === 37) {
                                 //左移
                                 _this.net.update(activeNode, {
-                                    x: x - (10 / _this.netScale),
+                                    x: x - 1,
                                     y: y
                                 });
                             } else if (e.keyCode === 38) {
                                 //上移
                                 _this.net.update(activeNode, {
                                     x: x,
-                                    y: y - (10 / _this.netScale)
+                                    y: y - 1
                                 });
                             } else if (e.keyCode === 39) {
                                 //右移
                                 _this.net.update(activeNode, {
-                                    x: x + (10 / _this.netScale),
+                                    x: x + 1,
                                     y: y
                                 });
                             } else if (e.keyCode === 40) {
                                 //下移
                                 _this.net.update(activeNode, {
                                     x: x,
-                                    y: y + (10 / _this.netScale)
+                                    y: y + 1
                                 });
                             }
                         });
@@ -535,10 +533,6 @@
                     }
                 });
 
-                _this.net.on('itemchange', () => {
-                    _this.handleChange();
-                });
-
                 _this.net.on('itemadd', (e) => {
                     let item = e.item,
                         type = item.get('type');
@@ -548,11 +542,14 @@
                             curTitle = item._attrs.model.title,
                             existTitleList = nodes.map((node) => {
                                 return node._attrs.model.title;
-                            });
+                            }),
+                            isExist = existTitleList.includes(curTitle),
+                            newTitle = '';
 
-                        if (existTitleList.includes(curTitle)) {
-                            let newTitle = `${curTitle}-副本(${new Date().valueOf()})`,
-                                moduleName = item._attrs.model.moduleName,
+                        if (isExist) {
+                            newTitle = `${curTitle}-副本(${new Date().valueOf()})`;
+
+                            let moduleName = item._attrs.model.moduleName,
                                 moduleIndex = _this.projectData.modules.findIndex((module) => {
                                     return module.name === moduleName;
                                 }),
@@ -567,9 +564,11 @@
                                 fields: entity.fields,
                                 headers: entity.headers
                             });
+                        }
 
-                            clearTimeout(_this.netRefreshTimeout);
-                            _this.netRefreshTimeout = setTimeout(() => {
+                        clearTimeout(_this.netRefreshTimeout);
+                        _this.netRefreshTimeout = setTimeout(() => {
+                            if (isExist) {
                                 //然后更新节点信息
                                 _this.net.update(item, {
                                     title: newTitle,
@@ -579,27 +578,26 @@
 
                                 //最后才刷新关系图
                                 _this.net.refresh();
-                            });
-                        }
-                    }
+                            }
 
-                    _this.handleChange();
+                            let source = _this.net.save().source;
+                            _this.curModule.graphCanvas = source;
+                        });
+                    }
                 });
 
                 _this.net.on('itemremove', (e) => {
                     let item = e.item,
                         type = item.get('type');
 
-                    if (type === 'edge') {
+                    if (type === 'edge' || type === 'node') {
                         clearTimeout(_this.netRefreshTimeout);
                         _this.netRefreshTimeout = setTimeout(() => {
-                            let source =_this.net.save().source;
+                            let source = _this.net.save().source;
                             _this.getAssociations(source);
                             _this.net.changeData(source.nodes, source.edges);
                         });
                     }
-
-                    _this.handleChange();
                 });
             },
             changeNetSize () {
@@ -613,34 +611,6 @@
                     this.netMode = mode;
                 }
                 this.net.changeMode(this.netMode);
-            },
-            changeNetScale (type) {
-                let _this = this,
-                    width = _this.net._attrs.width,
-                    height = _this.net._attrs.height,
-                    centerPoint = _this.net.invertPoint({x: width / 2, y: height / 2}),
-                    matrix = new G6.Matrix.Matrix3(),
-                    max = 4,
-                    min = 0.5;
-
-                switch (type) {
-                    case 'add':
-                        _this.netScale = Math.min(_this.netScale + 0.2, max);
-                        break;
-                    case 'normal':
-                        _this.netScale = 1;
-                        break;
-                    case 'sub':
-                        _this.netScale = Math.max(_this.netScale - 0.2, min);
-                        break;
-                }
-
-                matrix.translate(-centerPoint.x, -centerPoint.y);
-                matrix.scale(_this.netScale, _this.netScale);
-                matrix.translate(width / 2, height / 2);
-
-                _this.net.updateMatrix(matrix);
-                _this.net.refresh();
             },
 
             handleDragOver (e) {

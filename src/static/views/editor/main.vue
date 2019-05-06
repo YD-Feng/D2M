@@ -193,43 +193,44 @@
                     <div v-for="(item, index) in tabWinList"
                          v-if="curTabIndex == index">
                         <!--关系图-->
-                        <relation-diagram
+                        <relation
                             :ref="'tabWin-' + index"
                             v-if="item.type == 2"
+                            v-model="projectData.modules[item.moduleIndex]"
                             :project-data="projectData"
                             :module-index="item.moduleIndex"
-                            @data-change="handleWinDataChange"
                             @copy-table="handleCopyTable"
                             @dblclick-table="handleDblClickTable">
-                        </relation-diagram>
+                        </relation>
 
                         <!--数据表-->
-                        <data-table
+                        <entity
                             :ref="'tabWin-' + index"
                             v-if="item.type == 3"
+                            v-model="projectData.modules[item.moduleIndex].entities[item.entityIndex]"
                             :project-data="projectData"
                             :cur-module="projectData.modules[item.moduleIndex]"
                             :change-list="changeList"
                             :last-tab="item.lastTab"
-                            @data-change="handleWinDataChange"
                             @field-visible-change="handleFieldVisibleChange"
                             @field-sort-change="handleFieldSortChange"
-                            @tab-change="handleTabChange">
-                        </data-table>
+                            @tab-change="handleEntityTabChange">
+                        </entity>
 
                         <!--数据类型-->
                         <data-type
                             :ref="'tabWin-' + index"
                             v-if="item.type == 4"
-                            :data-base-list="projectData.dataTypeDomains.database"
-                            @data-change="handleWinDataChange">
+                            v-model="projectData.dataTypeDomains.datatype[item.dataTypeIndex]"
+                            :data-base-list="projectData.dataTypeDomains.database">
                         </data-type>
 
                         <!--数据库-->
                         <data-base
                             :ref="'tabWin-' + index"
                             v-if="item.type == 5"
-                            @data-change="handleWinDataChange">
+                            v-model="projectData.dataTypeDomains.database[item.dataBaseIndex]"
+                            @default-db-change="handleDefaultDbChange">
                         </data-base>
 
                         <!--版本对比-->
@@ -519,8 +520,8 @@
     import deepClone from './../../js/utils/deep-clone';
     import defaultData from './../../js/utils/default-data';
 
-    import relationDiagram from './relation-diagram.vue';
-    import dataTable from './data-table.vue';
+    import relation from './relation.vue';
+    import entity from './entity.vue';
     import dataType from './data-type.vue';
     import dataBase from './data-base.vue';
     import versionStep from './version-step.vue';
@@ -531,8 +532,8 @@
 
     export default {
         components: {
-            relationDiagram,
-            dataTable,
+            relation,
+            entity,
             dataType,
             dataBase,
             versionStep,
@@ -608,10 +609,10 @@
                         {cn: '复制', en: 'Copy'},
                         {cn: '删除', en: 'Delete'}
                     ],
-                    relationDiagram: [
+                    relation: [
                         {cn: '打开', en: 'Open'}
                     ],
-                    dataTable: [
+                    entity: [
                         {cn: '新建数据表', en: 'New'},
                         {cn: '粘贴', en: 'Paste'}
                     ],
@@ -801,7 +802,7 @@
                     moduleIndex = _this.projectData.modules.findIndex((item) => {
                         return item.name === data.orgObj.name;
                     });
-                } else if (data.contextMenuType === 'relationDiagram' ||　data.contextMenuType === 'dataTable') {
+                } else if (data.contextMenuType === 'relation' ||　data.contextMenuType === 'entity') {
                     //关系图　或 数据表目录
                     moduleIndex = _this.projectData.modules.findIndex((item) => {
                         return item.name === node.parent.data.orgObj.name;
@@ -884,7 +885,7 @@
                             type: 'newModule',
                             dialogTitle: '新建模块'
                         },
-                        dataTable: {
+                        entity: {
                             type: 'newTable',
                             dialogTitle: '新建数据表'
                         },
@@ -1009,17 +1010,17 @@
                                 {
                                     label: '关系图',
                                     nodeType: 2,
-                                    contextMenuType: 'relationDiagram',
+                                    contextMenuType: 'relation',
                                     children: []
                                 },
                                 {
                                     label: '数据表',
                                     nodeType: 1,
-                                    contextMenuType: 'dataTable',
+                                    contextMenuType: 'entity',
                                     children: obj.entities.map((entity, entityIndex) => {
                                         return {
                                             label: entity.chnname ? `${entity.title}[${entity.chnname}]` : entity.title,
-                                            pasteTarget: 'dataTable',
+                                            pasteTarget: 'entity',
                                             orgObj: entity,
                                             moduleIndex: moduleIndex,
                                             entityIndex: entityIndex,
@@ -1033,13 +1034,13 @@
                         });
                         break;
 
-                    case 'dataTable':
+                    case 'entity':
                         obj.title = `${obj.title}-副本(${new Date().valueOf()})`;
                         let moduleIndex = _this.contextMenu.moduleIndex;
                         _this.projectData.modules[moduleIndex].entities.push(obj);
                         _this.modulesTreeData[moduleIndex].children[1].children.push({
                             label: obj.title,
-                            pasteTarget: 'dataTable',
+                            pasteTarget: 'entity',
                             orgObj: obj,
                             nodeType: 3,
                             contextMenuType: 'other',
@@ -1102,9 +1103,6 @@
 
                         if (entityIndex !== undefined) {
 
-                            //删除数据表，要先同步组件的项目数据
-                            _this.handleSave(undefined, true);
-
                             //然后移除关系图数据中与删除目标数据表相关的数据
                             let oldTitle = _this.projectData.modules[moduleIndex].entities[entityIndex].title;
                             _this.projectData.modules.forEach((module) => {
@@ -1149,9 +1147,6 @@
                             };
 
                         } else {
-
-                            //删除模块，要先同步组件的项目数据
-                            _this.handleSave(undefined, true);
 
                             //然后移除关系图数据中与删除目标模块相关的数据
                             let targetModule = _this.projectData.modules[moduleIndex],
@@ -1441,13 +1436,13 @@
                                 {
                                     label: '关系图',
                                     nodeType: 2,
-                                    contextMenuType: 'relationDiagram',
+                                    contextMenuType: 'relation',
                                     children: []
                                 },
                                 {
                                     label: '数据表',
                                     nodeType: 1,
-                                    contextMenuType: 'dataTable',
+                                    contextMenuType: 'entity',
                                     children: []
                                 }
                             ]
@@ -1467,7 +1462,7 @@
                         _this.projectData.modules[moduleIndex].entities.push(entity);
                         _this.modulesTreeData[moduleIndex].children[1].children.push({
                             label: chnname ? `${title}[${chnname}]` : title,
-                            pasteTarget: 'dataTable',
+                            pasteTarget: 'entity',
                             orgObj: entity,
                             nodeType: 3,
                             contextMenuType: 'other',
@@ -1509,8 +1504,6 @@
                     case 'renameModule':
                         let oldModuleName = _this.projectData.modules[moduleIndex].name;
 
-                        //重命名模块，要先同步组件的项目数据
-                        _this.handleSave(undefined, true);
                         //再同步关系图数据
                         _this.projectData.modules.forEach((module) => {
                             module.graphCanvas.nodes.forEach((item) => {
@@ -1537,8 +1530,6 @@
                     case 'renameTable':
                         let oldTitle = _this.projectData.modules[moduleIndex].entities[entityIndex].title;
 
-                        //重命名数据表，要先同步组件的项目数据
-                        _this.handleSave(undefined, true);
                         //再同步关系图数据
                         _this.projectData.modules.forEach((module) => {
                             module.graphCanvas.nodes.forEach((item) => {
@@ -1744,10 +1735,9 @@
                     tabWin = null,
                     tabName = '',
                     curData = null,
-                    flag = -1;
+                    existIndex = -1;
 
-                //先同步项目数据
-                _this.handleSave(_this.curTabIndex, true);
+                _this.beforeTabWinChange();
 
                 _this.tabWinList.forEach((item, index) => {
                     if (
@@ -1767,12 +1757,12 @@
                         item.oldVerCode === opts.oldVerCode)
 
                     ) {
-                        flag = index;
+                        existIndex = index;
                     }
                 });
 
-                if (flag !== -1) {
-                    _this.curTabIndex = flag;
+                if (existIndex !== -1) {
+                    _this.curTabIndex = existIndex;
                     _this.refreshTabWin();
                     return;
                 }
@@ -1780,11 +1770,8 @@
                 switch (opts.type) {
                     case 2:
                         //关系图
-                        curData = {
-                            graphCanvas: _this.projectData.modules[opts.moduleIndex].graphCanvas,
-                            associations: _this.projectData.modules[opts.moduleIndex].associations
-                        };
-                        tabName = `${_this.projectData.modules[opts.moduleIndex].name}-关系图`;
+                        curData = _this.projectData.modules[opts.moduleIndex];
+                        tabName = `${curData.name}-关系图`;
                         break;
 
                     case 3:
@@ -1833,11 +1820,12 @@
                     _this.tabWinList.shift();
                 }
 
+                //然后再切换到新窗口
                 _this.curTabIndex = _this.tabWinList.length - 1;
 
                 _this.$nextTick(() => {
-                    if (opts.type < 6) {
-                        _this.$refs[`tabWin-${_this.tabWinList.length - 1}`][0].setData(deepClone(curData));
+                    if (opts.type == 3) {
+                        _this.$refs[`tabWin-${_this.tabWinList.length - 1}`][0].setCurTab();
                     } else if (opts.type == 6 || opts.type == 7) {
                         _this.$refs[`tabWin-${_this.tabWinList.length - 1}`][0].init();
                     }
@@ -1849,9 +1837,6 @@
                 e && e.stopPropagation();
                 let _this = this;
 
-                //先同步项目数据
-                _this.handleSave(_this.curTabIndex, true);
-
                 _this.tabWinList.splice(index, 1);
 
                 if (_this.curTabIndex >= index && _this.curTabIndex != 0) {
@@ -1862,57 +1847,50 @@
             },
             handleCurTabWin (index) {
                 let _this = this;
-                //先同步项目数据
-                _this.handleSave(_this.curTabIndex, true);
+
+                _this.beforeTabWinChange();
                 _this.curTabIndex = index;
                 _this.refreshTabWin();
+            },
+            //切换到新窗口前的一系列处理逻辑
+            beforeTabWinChange () {
+                let _this = this,
+                    curTab = _this.tabWinList[_this.curTabIndex];
+
+                if (!curTab) {
+                    return;
+                }
+
+                let targetWin = _this.$refs[`tabWin-${_this.curTabIndex}`][0];
+
+                if (curTab.type == 2) {
+                    //当前窗口是关系图，如果是的话，先获取当前关系图的位置，缩放比例等信息缓存起来
+                    _this.$set(curTab, 'matrix', targetWin.getMatrix());
+                } else if (curTab.type == 6 || curTab.type == 7) {
+                    //当前窗口是 版本变更详情 或 版本对比，缓存版本对比信息
+                    _this.$set(curTab, 'winData', deepClone(targetWin.getData()));
+                }
             },
             //刷新当前页签对应编辑窗
             refreshTabWin () {
                 let _this = this,
-                    activeTab = _this.tabWinList[_this.curTabIndex],
-                    curData = null;
+                    activeTab = _this.tabWinList[_this.curTabIndex];
 
                 if (!activeTab) {
                     return;
                 }
 
-                switch (activeTab.type) {
-                    case 2:
-                        //关系图
-                        curData = {
-                            graphCanvas: _this.projectData.modules[activeTab.moduleIndex].graphCanvas,
-                            associations: _this.projectData.modules[activeTab.moduleIndex].associations
-                        };
-                        break;
-
-                    case 3:
-                        //数据表
-                        curData = _this.projectData.modules[activeTab.moduleIndex].entities[activeTab.entityIndex];
-                        break;
-
-                    case 4:
-                        //数据类型
-                        curData = _this.projectData.dataTypeDomains.datatype[activeTab.dataTypeIndex];
-                        break;
-
-                    case 5:
-                        //数据库
-                        curData = _this.projectData.dataTypeDomains.database[activeTab.dataBaseIndex];
-                        break;
-                }
-
                 _this.$nextTick(() => {
-                    if (activeTab.type < 6) {
-                        _this.$refs[`tabWin-${_this.curTabIndex}`][0].setData(deepClone(curData), activeTab.matrix);
+                    if (activeTab.type == 2) {
+                        _this.$refs[`tabWin-${_this.curTabIndex}`][0].setMatrix(activeTab.matrix);
+                    } else if (activeTab.type == 3) {
+                        _this.$refs[`tabWin-${_this.curTabIndex}`][0].setCurTab();
                     } else if (activeTab.type == 6 || activeTab.type == 7) {
                         _this.$refs[`tabWin-${_this.curTabIndex}`][0].setData(activeTab.winData);
                     }
                 });
             },
-            handleWinDataChange () {
-                //编辑窗数据发生变化时执行的回调，无参数，暂时无用，仅作预留
-            },
+
             handleCopyTable (moduleIndex, entityData) {
                 let _this = this,
                     entity = deepClone(entityData);
@@ -1920,7 +1898,7 @@
                 _this.projectData.modules[moduleIndex].entities.push(entity);
                 _this.modulesTreeData[moduleIndex].children[1].children.push({
                     label: entity.chnname ? `${entity.title}[${entity.chnname}]` : entity.title,
-                    pasteTarget: 'dataTable',
+                    pasteTarget: 'entity',
                     orgObj: entity,
                     nodeType: 3,
                     contextMenuType: 'other',
@@ -1992,9 +1970,23 @@
                     });
                 });
             },
-            handleTabChange (curTab) {
+            handleEntityTabChange (curTab) {
+                this.tabWinList[this.curTabIndex].lastTab = curTab;
+            },
+            handleDefaultDbChange (code, value) {
                 let _this = this;
-                _this.tabWinList[_this.curTabIndex].lastTab = curTab;
+
+                //默认数据库只能存在一个，且必须存在一个
+                if (value) {
+                    //选中
+                    _this.projectData.dataTypeDomains.database.forEach((item, index) => {
+                        if (item.code == code) {
+                            item.defaultDatabase = true;
+                        } else {
+                            item.defaultDatabase = false;
+                        }
+                    });
+                }
             },
 
             handleDragStart (e, data, node) {
@@ -2053,93 +2045,12 @@
                 }
             },
 
-            //保存内容 （当 notSaveFile 为 true 时，只同步组件数据，不同步保存到本地文件中）
-            handleSave (index, notSaveFile) {
+            //保存内容
+            handleSave () {
                 let _this = this;
-
-                if (index !== undefined) {
-                    let curTab = _this.tabWinList[index];
-                    _this.doSave(curTab, index);
-
-                    if (!notSaveFile) {
-                        saveFileSync(_this.projectData, _this.projectPath);
-                    }
-                } else {
-                    _this.tabWinList.forEach((item, index) => {
-                        _this.doSave(item, index);
-                    });
-
-                    if (!notSaveFile) {
-                        saveFileSync(_this.projectData, _this.projectPath);
-                    }
-                }
-
+                saveFileSync(_this.projectData, _this.projectPath);
                 _this.changeList = checkVersionData(_this.projectData, _this.compareData);
-
-                if (!notSaveFile) {
-                    _this.$message.success('保存成功');
-                }
-            },
-            doSave (curTab, index) {
-                if (!curTab) {
-                    return;
-                }
-
-                let _this = this,
-                    targetWin = _this.$refs[`tabWin-${index}`][0];
-
-                if (!targetWin) {
-                    return;
-                }
-
-                switch (curTab.type) {
-                    case 2:
-                        //关系图
-                        let data = targetWin.getData(),
-                            _data = deepClone({
-                                graphCanvas: data.graphCanvas,
-                                associations: data.associations
-                            });
-                        _this.projectData.modules[curTab.moduleIndex].graphCanvas = _data.graphCanvas;
-                        _this.projectData.modules[curTab.moduleIndex].associations = _data.associations;
-                        _this.$set(curTab, 'matrix', data.matrix);
-                        targetWin.hasChange = false;
-                        break;
-
-                    case 3:
-                        //数据表
-                        _this.projectData.modules[curTab.moduleIndex].entities[curTab.entityIndex] = deepClone(targetWin.getData());
-                        targetWin.hasChange = false;
-                        break;
-
-                    case 4:
-                        //数据类型
-                        _this.projectData.dataTypeDomains.datatype[curTab.dataTypeIndex] = deepClone(targetWin.getData());
-                        targetWin.hasChange = false;
-                        break;
-
-                    case 5:
-                        //数据库
-                        _this.projectData.dataTypeDomains.database[curTab.dataBaseIndex] = deepClone(targetWin.getData());
-
-                        //默认数据库只能存在一个
-                        if (_this.projectData.dataTypeDomains.database[curTab.dataBaseIndex].defaultDatabase) {
-                            _this.projectData.dataTypeDomains.database.forEach((item, index) => {
-                                item.defaultDatabase = index == curTab.dataBaseIndex;
-                            });
-                        }
-
-                        targetWin.hasChange = false;
-                        break;
-
-                    case 6:
-                        _this.$set(curTab, 'winData', deepClone(targetWin.getData()));
-                        break;
-
-                    case 7:
-                        _this.$set(curTab, 'winData', deepClone(targetWin.getData()));
-                        break;
-                }
+                _this.$message.success('保存成功');
             },
 
             getVersionList () {
@@ -2255,17 +2166,17 @@
                         {
                             label: '关系图',
                             nodeType: 2,
-                            contextMenuType: 'relationDiagram',
+                            contextMenuType: 'relation',
                             children: []
                         },
                         {
                             label: '数据表',
                             nodeType: 1,
-                            contextMenuType: 'dataTable',
+                            contextMenuType: 'entity',
                             children: module.entities.map((entity) => {
                                 return {
                                     label: entity.chnname ? `${entity.title}[${entity.chnname}]` : entity.title,
-                                    pasteTarget: 'dataTable',
+                                    pasteTarget: 'entity',
                                     orgObj: entity,
                                     nodeType: 3,
                                     contextMenuType: 'other',

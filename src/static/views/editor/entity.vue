@@ -1,7 +1,9 @@
 <template>
     <div class="tab-win-cont"
-         v-if="curDataTable">
-        <p class="title">{{curDataTable.chnname ? `${curDataTable.title}[${curDataTable.chnname}]` : curDataTable.title}} - 数据表详情</p>
+         v-if="curEntity">
+        <p class="title">
+            {{curEntity.chnname ? `${curEntity.title}[${curEntity.chnname}]` : curEntity.title}} - 数据表详情
+        </p>
 
         <el-radio-group v-model="curTab">
             <el-radio-button :label="1">基本信息</el-radio-button>
@@ -19,7 +21,7 @@
                         表名：
                     </td>
                     <td class="pl5px pb20px pr20px">
-                        {{curDataTable.chnname ? `${curDataTable.title}[${curDataTable.chnname}]` : curDataTable.title}}
+                        {{curEntity.chnname ? `${curEntity.title}[${curEntity.chnname}]` : curEntity.title}}
                     </td>
                 </tr>
                 <tr>
@@ -31,11 +33,10 @@
                     <td class="pl5px pb20px pr20px">
                         <el-input
                             type="textarea"
-                            v-model.trim="curDataTable.remark"
+                            v-model.trim="curEntity.remark"
                             :rows="6"
                             placeholder="请输入备注信息"
-                            style="width: 98%;"
-                            @input="handleChange">
+                            style="width: 98%;">
                         </el-input>
                     </td>
                 </tr>
@@ -110,7 +111,7 @@
                     </div>
 
                     <div class="th"
-                         v-for="(item, index) in curDataTable.headers"
+                         v-for="(item, index) in curEntity.headers"
                          :key="'tb-col-' + index"
                          :style="{'min-width': fieldConfig[item.fieldName].minWidth, width: fieldConfig[item.fieldName].width}">
                         <span class="f14px fBold">{{fieldConfig[item.fieldName].label}}</span>
@@ -122,7 +123,7 @@
                     </div>
                 </div>
 
-                <div class="tr" v-if="curDataTable.fields.length == 0">
+                <div class="tr" v-if="curEntity.fields.length == 0">
                     <div class="td"
                          style="min-width: 1540px; width: 100%; line-height: 60px; color: #909399;">
                         暂无数据
@@ -130,8 +131,8 @@
                 </div>
 
                 <div class="tr"
-                     v-if="curDataTable.fields.length > 0"
-                     v-for="(item, index) in curDataTable.fields">
+                     v-if="curEntity.fields.length > 0"
+                     v-for="(item, index) in curEntity.fields">
                     <div class="td"
                          style="min-width: 60px; width: 4%;">
                         <el-checkbox
@@ -147,8 +148,7 @@
                         <el-input
                             v-model.trim="item.chnname"
                             :placeholder="`请输入${fieldConfig.chnname.label}`"
-                            style="width: 100%;"
-                            @input="handleChange">
+                            style="width: 100%;">
                         </el-input>
                     </div>
 
@@ -157,8 +157,7 @@
                         <el-input
                             v-model.trim="item.name"
                             :placeholder="`请输入${fieldConfig.name.label}`"
-                            style="width: 100%;"
-                            @input="handleChange">
+                            style="width: 100%;">
                         </el-input>
                     </div>
 
@@ -168,8 +167,7 @@
                             v-if="curTab == 2 && refreshFlag"
                             v-model="item.type"
                             :placeholder="`请选择${fieldConfig.type.label}`"
-                            style="width: 100%;"
-                            @change="handleChange">
+                            style="width: 100%;">
                             <el-option
                                 v-for="item in dataTypeList"
                                 :key="item.code"
@@ -193,8 +191,7 @@
                         <el-input
                             v-model.trim="item.remark"
                             :placeholder="`请输入${fieldConfig.remark.label}`"
-                            style="width: 100%;"
-                            @input="handleChange">
+                            style="width: 100%;">
                         </el-input>
                     </div>
 
@@ -227,8 +224,7 @@
                         <el-input
                             v-model.trim="item.defaultValue"
                             :placeholder="`请输入${fieldConfig.defaultValue.label}`"
-                            style="width: 100%;"
-                            @input="handleChange">
+                            style="width: 100%;">
                         </el-input>
                     </div>
 
@@ -307,7 +303,7 @@
         <el-table
             v-if="curTab == 3"
             class="field-table"
-            :data="curDataTable.indexs"
+            :data="curEntity.indexs"
             border>
             <el-table-column
                 label=""
@@ -331,8 +327,7 @@
                     <el-input
                         v-model.trim="scope.row.name"
                         :placeholder="请输入索引名"
-                        style="width: 100%;"
-                        @input="handleChange">
+                        style="width: 100%;">
                     </el-input>
                 </template>
             </el-table-column>
@@ -343,8 +338,7 @@
                 width="120">
                 <template slot-scope="scope">
                     <el-checkbox
-                        v-model="scope.row.isUnique"
-                        @change="handleChange">
+                        v-model="scope.row.isUnique">
                     </el-checkbox>
                 </template>
             </el-table-column>
@@ -359,10 +353,9 @@
                         filterable
                         v-model="scope.row.fields"
                         :placeholder="请选择索引字段"
-                        style="width: 100%;"
-                        @change="handleChange">
+                        style="width: 100%;">
                         <el-option
-                            v-for="item in curDataTable.fields"
+                            v-for="item in curEntity.fields"
                             :key="item.name"
                             :value="item.name"
                             :label="item.chnname">
@@ -445,13 +438,10 @@
 
     module.exports = {
         replace: true,
-        props: ['projectData', 'curModule', 'changeList', 'lastTab'],
+        props: ['value', 'projectData', 'curModule', 'changeList', 'lastTab'],
         data () {
             return {
-                curDataTable: null,
-                initFlag: false,
-                fieldsTableInitFlag: false,
-                hasChange: false,
+                curEntity: null,
                 refreshFlag: false,
 
                 checkedField: [],
@@ -561,17 +551,10 @@
             }
         },
         watch: {
-            hasChange (newVal, oldVal) {
-                if (!newVal && oldVal) {
-                    this.showCode();
-                }
-            },
             curTab (val) {
                 let _this = this;
 
-                if (val == 2 && !_this.fieldsTableInitFlag) {
-                    _this.fieldsTableInitFlag = true;
-                } else if (val == 4) {
+                if (val == 4) {
                     _this.showCode();
                 }
 
@@ -582,52 +565,50 @@
                 });
 
                 _this.$emit('tab-change', val);
+            },
+            value: {
+                handler (newVal, oldVal) {
+                    let _this = this,
+                        key = '',
+                        curEntity = newVal;
+
+                    curEntity.fields.forEach((item) => {
+                        for (key in _this.fieldConfig) {
+                            item[key] = item[key] === undefined ? _this.fieldConfig[key].defaultValue : item[key];
+                        }
+                    });
+                    curEntity.remark = curEntity.remark === undefined ? '' : curEntity.remark;
+                    curEntity.indexs = curEntity.indexs === undefined ? [] : curEntity.indexs;
+
+                    _this.curEntity = curEntity;
+                    _this.refreshFlag = false;
+
+                    _this.showCode();
+
+                    _this.$nextTick(() => {
+                        //强制刷新某些组件
+                        _this.refreshFlag = true;
+                    });
+                },
+                deep: true,
+                immediate: true
+            },
+            curEntity: {
+                handler (newVal, oldVal) {
+                    this.$emit('update:value', newVal);
+                },
+                deep: true
             }
         },
         methods: {
-            setData (curDataTable) {
-                let _this = this,
-                    key = '';
-
-                curDataTable.fields.forEach((item) => {
-                    for (key in _this.fieldConfig) {
-                        item[key] = item[key] === undefined ? _this.fieldConfig[key].defaultValue : item[key];
-                    }
-                });
-                curDataTable.remark = curDataTable.remark === undefined ? '' : curDataTable.remark;
-                curDataTable.indexs = curDataTable.indexs === undefined ? [] : curDataTable.indexs;
-
-                _this.curDataTable = curDataTable;
-                _this.refreshFlag = false;
-
-                _this.curTab = _this.lastTab || 1;
-                _this.showCode();
-
-                _this.$nextTick(() => {
-                    //强制刷新某些组件
-                    _this.refreshFlag = true;
-                });
-            },
-
-            getData () {
-                return this.curDataTable;
-            },
-
-            handleChange () {
-                let _this = this;
-
-                if (_this.initFlag && !_this.hasChange) {
-                    _this.hasChange = true;
-                    _this.$emit('data-change');
-                }
+            setCurTab () {
+                this.curTab = this.lastTab || 1;
             },
 
             handleCheckBoxChange (fieldName, row) {
                 if (fieldName == 'pk' && row[fieldName]) {
                     row.notNull = true;
                 }
-
-                this.handleChange();
             },
 
             addField (e) {
@@ -642,8 +623,7 @@
                     }
                 }
 
-                _this.curDataTable.fields.push(obj);
-                _this.handleChange();
+                _this.curEntity.fields.push(obj);
             },
             addFieldAt (e, dealType) {
                 e.currentTarget.blur();
@@ -665,9 +645,9 @@
                 }
 
                 if (dealType == 'behind') {
-                    _this.curDataTable.fields.splice(index + 1, 0, obj);
+                    _this.curEntity.fields.splice(index + 1, 0, obj);
                 } else if (dealType == 'front') {
-                    _this.curDataTable.fields.splice(index, 0, obj);
+                    _this.curEntity.fields.splice(index, 0, obj);
                     _this.checkedField = [(index + 1).toString()];
                 }
             },
@@ -676,7 +656,7 @@
 
                 let _this = this,
                     index = _this.checkedField[0] * 1,
-                    targetField = _this.curDataTable.fields[index];
+                    targetField = _this.curEntity.fields[index];
 
                 if (_this.checkedField.length === 0) {
                     _this.$message.error('请先选择字段');
@@ -684,17 +664,16 @@
                 }
 
                 //移除字段前，先把索引里的对应索引字段移除
-                _this.curDataTable.indexs.forEach((index) => {
+                _this.curEntity.indexs.forEach((index) => {
                     index.fields = index.fields.filter((fieldName) => {
                         return fieldName != targetField.name;
                     });
                 });
 
-                _this.curDataTable.fields.splice(index, 1);
+                _this.curEntity.fields.splice(index, 1);
                 _this.checkedField = [];
 
-                _this.handleChange();
-                _this.$emit('field-visible-change', index, _this.curDataTable.title, targetField.name);
+                _this.$emit('field-visible-change', index, _this.curEntity.title, targetField.name);
             },
 
             addIndex (e) {
@@ -706,8 +685,7 @@
                         fields: []
                     };
 
-                _this.curDataTable.indexs.push(obj);
-                _this.handleChange();
+                _this.curEntity.indexs.push(obj);
             },
             addIndexAt (e, dealType) {
                 e.currentTarget.blur();
@@ -726,9 +704,9 @@
                 }
 
                 if (dealType == 'behind') {
-                    _this.curDataTable.indexs.splice(index + 1, 0, obj);
+                    _this.curEntity.indexs.splice(index + 1, 0, obj);
                 } else if (dealType == 'front') {
-                    _this.curDataTable.indexs.splice(index, 0, obj);
+                    _this.curEntity.indexs.splice(index, 0, obj);
                     _this.checkedIndex = [(index + 1).toString()];
                 }
             },
@@ -743,20 +721,17 @@
                     return;
                 }
 
-                _this.curDataTable.indexs.splice(index, 1);
+                _this.curEntity.indexs.splice(index, 1);
                 _this.checkedIndex = [];
-
-                _this.handleChange();
             },
 
             toggleRelationNoShow (item, isField, fieldIndex) {
                 let _this = this;
 
                 item.relationNoShow = !item.relationNoShow;
-                _this.handleChange();
 
                 if (isField) {
-                    _this.$emit('field-visible-change', fieldIndex, _this.curDataTable.title, item.name);
+                    _this.$emit('field-visible-change', fieldIndex, _this.curEntity.title, item.name);
                 }
             },
 
@@ -776,7 +751,7 @@
                             txt: '索引'
                         }
                     },
-                    arr = _this.curDataTable[map[type].listName],
+                    arr = _this.curEntity[map[type].listName],
                     index = _this[map[type].checkedName][0] * 1;
 
                 if (_this[map[type].checkedName].length === 0) {
@@ -801,11 +776,9 @@
 
                 _this[map[type].checkedName] = [num.toString()];
 
-                _this.handleChange();
-
                 if (type == 'field') {
                     //参数说明，调序前的索引值，调序后的索引值，表名
-                    _this.$emit('field-sort-change', index, num, _this.curDataTable.title);
+                    _this.$emit('field-sort-change', index, num, _this.curEntity.title);
                 }
             },
             handleCheckedChange (type, index) {
@@ -824,28 +797,28 @@
                     return (_this.curCodeType === 'createFieldTemplate'
                         && c.type === 'field'
                         && c.opt === 'add'
-                        && title === _this.curDataTable.title) ||
+                        && title === _this.curEntity.title) ||
                         (_this.curCodeType === 'updateFieldTemplate'
                             && c.type === 'field'
                             && c.opt === 'update'
-                            && title === _this.curDataTable.title) ||
+                            && title === _this.curEntity.title) ||
                         (_this.curCodeType === 'deleteFieldTemplate'
                             && c.type === 'field'
                             && c.opt === 'delete'
-                            && title === _this.curDataTable.title) ||
+                            && title === _this.curEntity.title) ||
                         (_this.curCodeType === 'deleteIndexTemplate'
                             && c.type === 'index'
                             && c.opt === 'delete'
-                            && title === _this.curDataTable.title) ||
+                            && title === _this.curEntity.title) ||
                         (_this.curCodeType === 'rebuildTableTemplate'
                             && c.type === 'field'
-                            && title === _this.curDataTable.title);
+                            && title === _this.curEntity.title);
                 });
 
                 return getCodeByDataTable(
                     _this.projectData,
                     _this.curModule.name,
-                    _this.curDataTable,
+                    _this.curEntity,
                     _this.dataBaseList[_this.curDataBaseIndex].code,
                     _this.curCodeType,
                     entityChangeList,
