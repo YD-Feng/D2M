@@ -196,9 +196,8 @@
                         <relation
                             :ref="'tabWin-' + index"
                             v-if="item.type == 2"
-                            v-model="projectData.modules[item.moduleIndex]"
+                            v-model="projectData.modules[item.moduleIndex].relations[item.relationIndex]"
                             :project-data="projectData"
-                            :module-index="item.moduleIndex"
                             @copy-table="handleCopyTable"
                             @dblclick-table="handleDblClickTable">
                         </relation>
@@ -270,7 +269,26 @@
             custom-class="editor-page-dialog-350px"
             :visible.sync="contextMenuDialog.visible">
             <div class="pl10px pr10px pt10px text-center">
-                <template v-if="contextMenuDialog.type == 'newTable' || contextMenuDialog.type == 'renameTable'">
+                <template v-if="contextMenuDialog.type == 'newRelation' || contextMenuDialog.type == 'renameRelation'">
+                    <div>
+                        编　码：
+                        <el-input
+                            v-model.trim="contextMenuDialog.title"
+                            placeholder="请输入关系图编码"
+                            style="width: 200px;">
+                        </el-input>
+                    </div>
+                    <div class="pt20px">
+                        中文名：
+                        <el-input
+                            v-model.trim="contextMenuDialog.chnname"
+                            placeholder="请输入关系图中文名"
+                            style="width: 200px;">
+                        </el-input>
+                    </div>
+                </template>
+
+                <template v-if="contextMenuDialog.type == 'newEntity' || contextMenuDialog.type == 'renameEntity'">
                     <div>
                         表　名：
                         <el-input
@@ -283,7 +301,7 @@
                         中文名：
                         <el-input
                             v-model.trim="contextMenuDialog.chnname"
-                            placeholder="请输入模块中文名"
+                            placeholder="请输入表中文名"
                             style="width: 200px;">
                         </el-input>
                     </div>
@@ -322,17 +340,6 @@
                         <el-input
                             v-model.trim="contextMenuDialog.code"
                             placeholder="请输入类型编码"
-                            style="width: 200px;">
-                        </el-input>
-                    </div>
-                </template>
-
-                <template v-if="contextMenuDialog.type == 'newDataBase' || contextMenuDialog.type == 'renameDataBase'">
-                    <div>
-                        库名：
-                        <el-input
-                            v-model.trim="contextMenuDialog.code"
-                            placeholder="请输入库名"
                             style="width: 200px;">
                         </el-input>
                     </div>
@@ -590,6 +597,7 @@
                     orgObj: undefined,
                     pasteTarget: '',
                     moduleIndex: undefined,
+                    relationIndex: undefined,
                     entityIndex: undefined,
                     dataTypeIndex: undefined,
                     dataBaseIndex: undefined,
@@ -610,7 +618,12 @@
                         {cn: '删除', en: 'Delete'}
                     ],
                     relation: [
-                        {cn: '打开', en: 'Open'}
+                        {cn: '新建关系图', en: 'New'}
+                    ],
+                    relationItem: [
+                        {cn: '打开', en: 'Open'},
+                        {cn: '重命名', en: 'Rename'},
+                        {cn: '删除', en: 'Delete'}
                     ],
                     entity: [
                         {cn: '新建数据表', en: 'New'},
@@ -620,9 +633,8 @@
                         {cn: '新建数据类型', en: 'New'},
                         {cn: '粘贴', en: 'Paste'}
                     ],
-                    dataBase: [
-                        {cn: '新建数据库', en: 'New'},
-                        {cn: '粘贴', en: 'Paste'}
+                    dataBaseItem: [
+                        {cn: '打开', en: 'Open'}
                     ],
                     other: [
                         {cn: '打开', en: 'Open'},
@@ -643,9 +655,10 @@
 
                 contextMenuDialog: {
                     visible: false,
-                    type: '', //rename-模块重命名，newModule-新建模块，newTable-新建数据表，newDataType-新建数据类型，newDataBase-新建数据库
+                    type: '', //rename-模块重命名，newModule-新建模块，newRelation-新建关系图，newEntity-新建数据表，newDataType-新建数据类型
                     dialogTitle: '',
                     moduleIndex: undefined,
+                    relationIndex: undefined,
                     entityIndex: undefined,
                     dataTypeIndex: undefined,
                     dataBaseIndex: undefined,
@@ -727,6 +740,7 @@
 
                     let _this = this,
                         moduleIndex = undefined,
+                        relationIndex = undefined,
                         entityIndex = undefined,
                         dataTypeIndex = undefined,
                         dataBaseIndex = undefined;
@@ -734,7 +748,10 @@
                     if (data.nodeType == 2) {
                         //关系图
                         moduleIndex = _this.projectData.modules.findIndex((item) => {
-                            return item.name === node.parent.data.orgObj.name;
+                            return item.name === node.parent.parent.data.orgObj.name;
+                        });
+                        relationIndex = _this.projectData.modules[moduleIndex].relations.findIndex((item) => {
+                            return item.title === data.orgObj.title;
                         });
                     } else if (data.nodeType == 3) {
                         //数据表
@@ -759,6 +776,7 @@
                     _this.openTabWin({
                         type: data.nodeType,
                         moduleIndex: moduleIndex,
+                        relationIndex: relationIndex,
                         entityIndex: entityIndex,
                         dataTypeIndex: dataTypeIndex,
                         dataBaseIndex: dataBaseIndex
@@ -793,6 +811,7 @@
                 e.stopPropagation();
                 let _this = this,
                     moduleIndex = undefined,
+                    relationIndex = undefined,
                     entityIndex = undefined,
                     dataTypeIndex = undefined,
                     dataBaseIndex = undefined;
@@ -803,10 +822,21 @@
                         return item.name === data.orgObj.name;
                     });
                 } else if (data.contextMenuType === 'relation' ||　data.contextMenuType === 'entity') {
-                    //关系图　或 数据表目录
+                    //关系图目录　或 数据表目录
                     moduleIndex = _this.projectData.modules.findIndex((item) => {
                         return item.name === node.parent.data.orgObj.name;
                     });
+                } else if (data.contextMenuType === 'relationItem') {
+                    //关系图
+                    moduleIndex = _this.projectData.modules.findIndex((item) => {
+                        return item.name === node.parent.parent.data.orgObj.name;
+                    });
+                    relationIndex = _this.projectData.modules[moduleIndex].relations.findIndex((item) => {
+                        return item.title === data.orgObj.title;
+                    });
+                } else if (data.contextMenuType === 'dataBase') {
+                    //数据库目录
+                    return;
                 } else if (data.contextMenuType === 'other') {
                     if (data.nodeType == 3) {
                         //数据表
@@ -835,6 +865,7 @@
                 _this.contextMenu.orgObj = data.orgObj;
                 _this.contextMenu.pasteTarget = data.pasteTarget;
                 _this.contextMenu.moduleIndex = moduleIndex;
+                _this.contextMenu.relationIndex = relationIndex;
                 _this.contextMenu.entityIndex = entityIndex;
                 _this.contextMenu.dataTypeIndex = dataTypeIndex;
                 _this.contextMenu.dataBaseIndex = dataBaseIndex;
@@ -871,6 +902,7 @@
                 _this.openTabWin({
                     type: _this.contextMenu.nodeType,
                     moduleIndex: _this.contextMenu.moduleIndex,
+                    relationIndex: _this.contextMenu.relationIndex,
                     entityIndex: _this.contextMenu.entityIndex,
                     dataTypeIndex: _this.contextMenu.dataTypeIndex,
                     dataBaseIndex: _this.contextMenu.dataBaseIndex
@@ -885,18 +917,18 @@
                             type: 'newModule',
                             dialogTitle: '新建模块'
                         },
+                        relation: {
+                            type: 'newRelation',
+                            dialogTitle: '新建关系图'
+                        },
                         entity: {
-                            type: 'newTable',
+                            type: 'newEntity',
                             dialogTitle: '新建数据表'
                         },
                         dataType: {
                             type: 'newDataType',
                             dialogTitle: '新建数据类型'
-                        },
-                        dataBase: {
-                            type: 'newDataBase',
-                            dialogTitle: '新建数据库'
-                        },
+                        }
                     };
 
                 _this.contextMenuDialog = {
@@ -904,6 +936,7 @@
                     type: dialogConfig[_this.contextMenu.type].type,
                     dialogTitle: dialogConfig[_this.contextMenu.type].dialogTitle,
                     moduleIndex: _this.contextMenu.moduleIndex,
+                    relationIndex: _this.contextMenu.relationIndex,
                     entityIndex: _this.contextMenu.entityIndex,
                     dataTypeIndex: _this.contextMenu.dataTypeIndex,
                     dataBaseIndex: _this.contextMenu.dataBaseIndex,
@@ -925,6 +958,7 @@
                         type: '',
                         dialogTitle: '',
                         moduleIndex: _this.contextMenu.moduleIndex,
+                        relationIndex: _this.contextMenu.relationIndex,
                         entityIndex: _this.contextMenu.entityIndex,
                         dataTypeIndex: _this.contextMenu.dataTypeIndex,
                         dataBaseIndex: _this.contextMenu.dataBaseIndex,
@@ -946,10 +980,19 @@
                     obj.oldName = _this.contextMenu.orgObj.name;
                     obj.chnname = _this.contextMenu.orgObj.chnname;
 
+                } else if (_this.contextMenu.type == 'relationItem' && _this.contextMenu.relationIndex !== undefined) {
+
+                    //关系图重命名
+                    obj.type = 'renameRelation';
+                    obj.dialogTitle = '关系图重命名';
+                    obj.title = _this.contextMenu.orgObj.title;
+                    obj.oldTitle = _this.contextMenu.orgObj.title;
+                    obj.chnname = _this.contextMenu.orgObj.chnname;
+
                 } else if (_this.contextMenu.type == 'other' && _this.contextMenu.entityIndex !== undefined) {
 
                     //数据表重命名
-                    obj.type = 'renameTable';
+                    obj.type = 'renameEntity';
                     obj.dialogTitle = '数据表重命名';
                     obj.title = _this.contextMenu.orgObj.title;
                     obj.oldTitle = _this.contextMenu.orgObj.title;
@@ -962,14 +1005,6 @@
                     obj.dialogTitle = '数据类型重命名';
                     obj.name = _this.contextMenu.orgObj.name;
                     obj.oldName = _this.contextMenu.orgObj.name;
-                    obj.code = _this.contextMenu.orgObj.code;
-                    obj.oldCode = _this.contextMenu.orgObj.code;
-
-                } else if (_this.contextMenu.type == 'other' && _this.contextMenu.dataBaseIndex !== undefined) {
-
-                    //数据库重命名
-                    obj.type = 'renameDataBase';
-                    obj.dialogTitle = '数据库重命名';
                     obj.code = _this.contextMenu.orgObj.code;
                     obj.oldCode = _this.contextMenu.orgObj.code;
 
@@ -1009,9 +1044,20 @@
                             children: [
                                 {
                                     label: '关系图',
-                                    nodeType: 2,
+                                    nodeType: 1,
                                     contextMenuType: 'relation',
-                                    children: []
+                                    children: obj.relations.map((relation, relationIndex) => {
+                                        return {
+                                            label: relation.chnname ? `${relation.title}[${relation.chnname}]` : relation.title,
+                                            pasteTarget: 'relation',
+                                            orgObj: relation,
+                                            moduleIndex: moduleIndex,
+                                            relationIndex: relationIndex,
+                                            nodeType: 2,
+                                            contextMenuType: 'relationItem',
+                                            children: []
+                                        }
+                                    })
                                 },
                                 {
                                     label: '数据表',
@@ -1061,19 +1107,6 @@
                             children: []
                         });
                         break;
-
-                    case 'dataBase':
-                        obj.code = `${obj.code}-副本(${new Date().valueOf()})`;
-                        _this.projectData.dataTypeDomains.database.push(obj);
-                        _this.dataConfigTreeData[1].children.push({
-                            label: obj.code,
-                            pasteTarget: 'dataBase',
-                            orgObj: obj,
-                            nodeType: 5,
-                            contextMenuType: 'other',
-                            children: []
-                        });
-                        break;
                 }
             },
 
@@ -1081,6 +1114,7 @@
             doDelete () {
                 let _this = this,
                     moduleIndex = _this.contextMenu.moduleIndex,
+                    relationIndex = _this.contextMenu.relationIndex,
                     entityIndex = _this.contextMenu.entityIndex,
                     dataTypeIndex = _this.contextMenu.dataTypeIndex,
                     dataBaseIndex = _this.contextMenu.dataBaseIndex,
@@ -1101,27 +1135,62 @@
 
                     if (moduleIndex !== undefined) {
 
-                        if (entityIndex !== undefined) {
+                        if (relationIndex !== undefined) {
 
-                            //然后移除关系图数据中与删除目标数据表相关的数据
+                            //删除关系图
+                            _this.projectData.modules[moduleIndex].relations.splice(relationIndex, 1);
+                            _this.modulesTreeData[moduleIndex].children[0].children.splice(relationIndex, 1);
+
+                            //定义 tabWin 过滤函数，把需要关闭的 tabWin 从列表中过滤掉
+                            filterFn = (item, index) => {
+                                let flag = true;
+
+                                if (
+                                    item.type === 2 &&
+                                    item.moduleIndex === moduleIndex &&
+                                    item.relationIndex === relationIndex
+                                ) {
+                                    flag = false;
+                                    if (_this.curTabIndex >= index && _this.curTabIndex - count > 0) {
+                                        count++;
+                                    }
+                                } else {
+                                    if (item.relationIndex > relationIndex) {
+                                        item.relationIndex--;
+                                    }
+                                }
+
+                                return flag;
+                            };
+
+                        } else if (entityIndex !== undefined) {
+
+                            //移除关系图数据中与删除目标数据表相关的数据
                             let oldTitle = _this.projectData.modules[moduleIndex].entities[entityIndex].title;
+
                             _this.projectData.modules.forEach((module) => {
+
                                 let delIdMap = {};
 
-                                module.graphCanvas.nodes = module.graphCanvas.nodes.filter((item) => {
-                                    if (item.title === oldTitle) {
-                                        delIdMap[item.id] = true;
-                                    }
-                                    return item.title !== oldTitle;
+                                module.relations.forEach((relation) => {
+
+                                    relation.graphCanvas.nodes = relation.graphCanvas.nodes.filter((item) => {
+                                        if (item.title === oldTitle) {
+                                            delIdMap[item.id] = true;
+                                        }
+                                        return item.title !== oldTitle;
+                                    });
+
+                                    relation.graphCanvas.edges = relation.graphCanvas.edges.filter((item) => {
+                                        return !delIdMap[item.source] && !delIdMap[item.target];
+                                    });
+
+                                    relation.associations = relation.associations.filter((item) => {
+                                        return item.from.entity !== oldTitle && item.to.entity !== oldTitle;
+                                    });
+
                                 });
 
-                                module.graphCanvas.edges = module.graphCanvas.edges.filter((item) => {
-                                    return !delIdMap[item.source] && !delIdMap[item.target];
-                                });
-
-                                module.associations = module.associations.filter((item) => {
-                                    return item.from.entity !== oldTitle && item.to.entity !== oldTitle;
-                                });
                             });
 
                             //再删除数据表
@@ -1141,6 +1210,10 @@
                                     if (_this.curTabIndex >= index && _this.curTabIndex - count > 0) {
                                         count++;
                                     }
+                                } else {
+                                    if (item.entityIndex > entityIndex) {
+                                        item.entityIndex--;
+                                    }
                                 }
 
                                 return flag;
@@ -1148,7 +1221,7 @@
 
                         } else {
 
-                            //然后移除关系图数据中与删除目标模块相关的数据
+                            //移除关系图数据中与删除目标模块相关的数据
                             let targetModule = _this.projectData.modules[moduleIndex],
                                 oldModuleName = targetModule.name,
                                 delTitleMap = {};
@@ -1158,23 +1231,29 @@
                             });
 
                             _this.projectData.modules.forEach((module) => {
+
                                 let delIdMap = {};
 
-                                module.graphCanvas.nodes = module.graphCanvas.nodes.filter((item) => {
-                                    if (item.moduleName === oldModuleName) {
-                                        delIdMap[item.id] = true;
-                                        delTitleMap[item.title] = true;
-                                    }
-                                    return item.moduleName !== oldModuleName;
+                                module.relations.forEach((relation) => {
+
+                                    relation.graphCanvas.nodes = relation.graphCanvas.nodes.filter((item) => {
+                                        if (item.moduleName === oldModuleName) {
+                                            delIdMap[item.id] = true;
+                                            delTitleMap[item.title] = true;
+                                        }
+                                        return item.moduleName !== oldModuleName;
+                                    });
+
+                                    relation.graphCanvas.edges = relation.graphCanvas.edges.filter((item) => {
+                                        return !delIdMap[item.source] && !delIdMap[item.target];
+                                    });
+
+                                    relation.associations = relation.associations.filter((item) => {
+                                        return !delTitleMap[item.from.entity] && !delTitleMap[item.to.entity];
+                                    });
+
                                 });
 
-                                module.graphCanvas.edges = module.graphCanvas.edges.filter((item) => {
-                                    return !delIdMap[item.source] && !delIdMap[item.target];
-                                });
-
-                                module.associations = module.associations.filter((item) => {
-                                    return !delTitleMap[item.from.entity] && !delTitleMap[item.to.entity];
-                                });
                             });
 
                             //再删除模块
@@ -1192,6 +1271,10 @@
                                     flag = false;
                                     if (_this.curTabIndex >= index && _this.curTabIndex - count > 0) {
                                         count++;
+                                    }
+                                } else {
+                                    if (item.moduleIndex > moduleIndex) {
+                                        item.moduleIndex--;
                                     }
                                 }
 
@@ -1218,34 +1301,9 @@
                                 if (_this.curTabIndex >= index && _this.curTabIndex - count > 0) {
                                     count++;
                                 }
-                            }
-
-                            return flag;
-                        };
-
-                    } else if (dataBaseIndex !== undefined) {
-
-                        //删除数据库
-                        let targetDataBase = _this.projectData.dataTypeDomains.database.splice(dataBaseIndex, 1)[0];
-                        _this.dataConfigTreeData[1].children.splice(dataBaseIndex, 1);
-
-                        if (targetDataBase.defaultDatabase) {
-                            //如果删除的数据库是默认数据库，则重新设置列表的首个数据库为默认数据库
-                            _this.projectData.dataTypeDomains.database[0].defaultDatabase = true;
-                            _this.dataConfigTreeData[1].children[0].orgObj.defaultDatabase = true;
-                        }
-
-                        //定义 tabWin 过滤函数，把需要关闭的 tabWin 从列表中过滤掉
-                        filterFn = (item, index) => {
-                            let flag = true;
-
-                            if (
-                                item.type === 5 &&
-                                item.dataBaseIndex === dataBaseIndex
-                            ) {
-                                flag = false;
-                                if (_this.curTabIndex >= index && _this.curTabIndex - count > 0) {
-                                    count++;
+                            } else {
+                                if (item.dataTypeIndex > dataTypeIndex) {
+                                    item.dataTypeIndex--;
                                 }
                             }
 
@@ -1296,6 +1354,7 @@
                     code = _this.contextMenuDialog.code,
                     oldCode = _this.contextMenuDialog.oldCode,
                     moduleIndex = _this.contextMenuDialog.moduleIndex,
+                    relationIndex = _this.contextMenuDialog.relationIndex,
                     entityIndex = _this.contextMenuDialog.entityIndex,
                     dataTypeIndex = _this.contextMenuDialog.dataTypeIndex,
                     dataBaseIndex = _this.contextMenuDialog.dataBaseIndex;
@@ -1310,7 +1369,21 @@
                             throw {message: '模块名已存在，不能重复'};
                         }
 
-                    } else if (type == 'newTable') {
+                    } else if (type == 'newRelation') {
+
+                        if (title == '') {
+                            throw {message: '关系图编码不能为空'};
+                        }
+
+                        _this.projectData.modules.forEach((module) => {
+                            module.relations.forEach((relation) => {
+                                if (relation.title == title) {
+                                    throw {message: '关系图编码已存在，不能重复'};
+                                }
+                            });
+                        });
+
+                    } else if (type == 'newEntity') {
 
                         if (title == '') {
                             throw {message: '表名不能为空'};
@@ -1338,14 +1411,6 @@
                             throw {message: '类型名称已存在，不能重复'};
                         }
 
-                    } else if (type == 'newDataBase') {
-
-                        if (code == '') {
-                            throw {message: '库名不能为空'};
-                        } else if (_this.projectData.dataTypeDomains.database.filter((module) => module.code == code).length > 0) {
-                            throw {message: '库名已存在，不能重复'};
-                        }
-
                     } else if (type == 'renameModule') {
 
                         if (name == '') {
@@ -1357,7 +1422,7 @@
                             throw {message: '模块名已存在，不能重复'};
                         }
 
-                    } else if (type == 'renameTable') {
+                    } else if (type == 'renameEntity') {
 
                         if (title == '') {
                             throw {message: '表名不能为空'};
@@ -1391,17 +1456,6 @@
                             throw {message: '类型名称已存在，不能重复'};
                         }
 
-                    } else if (type == 'renameDataBase') {
-
-                        if (code == '') {
-                            throw {message: '库名不能为空'};
-                        } else if (
-                            code != oldCode &&
-                            _this.projectData.dataTypeDomains.database.filter((module) => module.code == code).length > 0
-                        ) {
-                            throw {message: '库名已存在，不能重复'};
-                        }
-
                     }
 
                 } catch (err) {
@@ -1418,11 +1472,7 @@
                             name: name,
                             chnname: chnname,
                             entities: [],
-                            graphCanvas: {
-                                nodes: [],
-                                edges: []
-                            },
-                            associations: []
+                            relations: []
                         };
 
                         _this.projectData.modules.push(module);
@@ -1435,7 +1485,7 @@
                             children: [
                                 {
                                     label: '关系图',
-                                    nodeType: 2,
+                                    nodeType: 1,
                                     contextMenuType: 'relation',
                                     children: []
                                 },
@@ -1449,7 +1499,29 @@
                         });
                         break;
 
-                    case 'newTable':
+                    case 'newRelation':
+                        let relation = {
+                            title: title,
+                            chnname: chnname,
+                            graphCanvas: {
+                                nodes: [],
+                                edges: []
+                            },
+                            associations: []
+                        };
+
+                        _this.projectData.modules[moduleIndex].relations.push(relation);
+                        _this.modulesTreeData[moduleIndex].children[0].children.push({
+                            label: chnname ? `${title}[${chnname}]` : title,
+                            pasteTarget: 'relation',
+                            orgObj: relation,
+                            nodeType: 2,
+                            contextMenuType: 'relationItem',
+                            children: []
+                        });
+                        break;
+
+                    case 'newEntity':
                         let entity = {
                             title: title,
                             chnname: chnname,
@@ -1486,65 +1558,70 @@
                         });
                         break;
 
-                    case 'newDataBase':
-                        let dataBase = {
-                            code: code
-                        };
-                        _this.projectData.dataTypeDomains.database.push(dataBase);
-                        _this.dataConfigTreeData[1].children.push({
-                            label: code,
-                            pasteTarget: 'dataBase',
-                            orgObj: dataBase,
-                            nodeType: 5,
-                            contextMenuType: 'other',
-                            children: []
-                        });
-                        break;
-
                     case 'renameModule':
                         let oldModuleName = _this.projectData.modules[moduleIndex].name;
 
                         //再同步关系图数据
                         _this.projectData.modules.forEach((module) => {
-                            module.graphCanvas.nodes.forEach((item) => {
-                                if (item.moduleName === oldModuleName) {
-                                    item.moduleName = name;
-                                }
+
+                            module.relations.forEach((relation) => {
+
+                                relation.graphCanvas.nodes.forEach((item) => {
+                                    if (item.moduleName === oldModuleName) {
+                                        item.moduleName = name;
+                                    }
+                                });
+
                             });
+
                         });
 
                         _this.projectData.modules[moduleIndex].name = name;
                         _this.projectData.modules[moduleIndex].chnname = chnname;
                         _this.modulesTreeData[moduleIndex].label = chnname ? `${name}[${chnname}]` : name;
                         _this.modulesTreeData[moduleIndex].orgObj = _this.projectData.modules[moduleIndex];
+                        break;
+
+                    case 'renameRelation':
+                        _this.projectData.modules[moduleIndex].relations[relationIndex].title = title;
+                        _this.projectData.modules[moduleIndex].relations[relationIndex].chnname = chnname;
+                        _this.modulesTreeData[moduleIndex].children[0].children[relationIndex].label = chnname ? `${title}[${chnname}]` : title;
+                        _this.modulesTreeData[moduleIndex].children[0].children[relationIndex].orgObj = _this.projectData.modules[moduleIndex].relations[relationIndex];
 
                         filterFn = (item, index) => {
                             return (
                                 item.type === 2 &&
-                                item.moduleIndex === moduleIndex
+                                item.moduleIndex === moduleIndex &&
+                                item.relationIndex === relationIndex
                             );
                         };
-                        tabName = `${name}-关系图`;
+                        tabName = chnname ? `${title}[${chnname}]` : title;
                         break;
 
-                    case 'renameTable':
-                        let oldTitle = _this.projectData.modules[moduleIndex].entities[entityIndex].title;
+                    case 'renameEntity':
+                        let oldEntityTitle = _this.projectData.modules[moduleIndex].entities[entityIndex].title;
 
                         //再同步关系图数据
                         _this.projectData.modules.forEach((module) => {
-                            module.graphCanvas.nodes.forEach((item) => {
-                                if (item.title === oldTitle) {
-                                    item.title = title;
-                                }
+
+                            module.relations.forEach((relation) => {
+
+                                relation.graphCanvas.nodes.forEach((item) => {
+                                    if (item.title === oldEntityTitle) {
+                                        item.title = title;
+                                    }
+                                });
+
+                                relation.associations.forEach((item) => {
+                                    if (item.from.entity === oldEntityTitle) {
+                                        item.from.entity = title;
+                                    } else if (item.to.entity === oldEntityTitle) {
+                                        item.to.entity = title;
+                                    }
+                                });
+
                             });
 
-                            module.associations.forEach((item) => {
-                                if (item.from.entity === oldTitle) {
-                                    item.from.entity = title;
-                                } else if (item.to.entity === oldTitle) {
-                                    item.to.entity = title;
-                                }
-                            });
                         });
 
                         _this.projectData.modules[moduleIndex].entities[entityIndex].title = title;
@@ -1576,23 +1653,12 @@
                         };
                         tabName = `${name}[${code}]`;
                         break;
-
-                    case 'renameDataBase':
-                        _this.projectData.dataTypeDomains.database[dataBaseIndex].code = code;
-                        _this.dataConfigTreeData[1].children[dataBaseIndex].label = code;
-                        _this.dataConfigTreeData[1].children[dataTypeIndex].orgObj = _this.projectData.dataTypeDomains.database[dataBaseIndex];
-
-                        filterFn = (item, index) => {
-                            return (
-                                item.type === 5 &&
-                                item.dataBaseIndex === dataBaseIndex
-                            );
-                        };
-                        tabName = code;
-                        break;
                 }
 
-                if (type == 'renameModule' || type == 'renameTable' || type == 'renameDataType' || type == 'renameDataBase') {
+                if (type == 'renameRelation' ||
+                    type == 'renameEntity' ||
+                    type == 'renameDataType')
+                {
                     let renameTab = _this.tabWinList.filter(filterFn)[0];
                     if (renameTab) {
                         renameTab.tabName = tabName;
@@ -1746,6 +1812,7 @@
                         (item.type < 6 &&
                         item.type === opts.type &&
                         item.moduleIndex === opts.moduleIndex &&
+                        item.relationIndex === opts.relationIndex &&
                         item.entityIndex === opts.entityIndex &&
                         item.dataTypeIndex === opts.dataTypeIndex &&
                         item.dataBaseIndex === opts.dataBaseIndex) ||
@@ -1770,8 +1837,8 @@
                 switch (opts.type) {
                     case 2:
                         //关系图
-                        curData = _this.projectData.modules[opts.moduleIndex];
-                        tabName = `${curData.name}-关系图`;
+                        curData = _this.projectData.modules[opts.moduleIndex].relations[opts.relationIndex];
+                        tabName = curData.chnname ? `${curData.title}[${curData.chnname}]` : curData.title;
                         break;
 
                     case 3:
@@ -1807,6 +1874,7 @@
                     tabName: tabName,
                     type: opts.type,
                     moduleIndex: opts.moduleIndex,
+                    relationIndex: opts.relationIndex,
                     entityIndex: opts.entityIndex,
                     dataTypeIndex: opts.dataTypeIndex,
                     dataBaseIndex: opts.dataBaseIndex,
@@ -1824,7 +1892,9 @@
                 _this.curTabIndex = _this.tabWinList.length - 1;
 
                 _this.$nextTick(() => {
-                    if (opts.type == 3) {
+                    if (opts.type == 2) {
+                        _this.$refs[`tabWin-${_this.tabWinList.length - 1}`][0].setMatrix(tabWin.matrix);
+                    } else if (opts.type == 3) {
                         _this.$refs[`tabWin-${_this.tabWinList.length - 1}`][0].setCurTab();
                     } else if (opts.type == 6 || opts.type == 7) {
                         _this.$refs[`tabWin-${_this.tabWinList.length - 1}`][0].init();
@@ -1909,6 +1979,7 @@
                 this.openTabWin({
                     type: 3,
                     moduleIndex: moduleIndex,
+                    relationIndex: undefined,
                     entityIndex: entityIndex,
                     dataTypeIndex: undefined,
                     dataBaseIndex: undefined
@@ -1916,25 +1987,30 @@
                 //取消文字选中（双击数据表来打开 tabWin，会出现 tabWin 内的文字都被选中的情况，所以添加下面的脚本）
                 window.getSelection().removeAllRanges();
             },
-            //删除字段 或者 设置字段在关系图中隐藏 后触发的回调函数
+            //删除字段 或者 设置字段在关系图中显隐 后触发的回调函数
             handleFieldVisibleChange (fieldIndex, tableTitle, fieldName) {
                 let _this = this;
 
                 _this.projectData.modules.forEach((module) => {
+
                     let idMap = {};
 
-                    module.graphCanvas.nodes.forEach((item) => {
-                        if (item.title === tableTitle) {
-                            idMap[item.id] = true;
-                        }
-                    });
+                    module.relations.forEach((relation) => {
 
-                    module.graphCanvas.edges = module.graphCanvas.edges.filter((item) => {
-                        return !idMap[item.source] && !idMap[item.target];
-                    });
+                        relation.graphCanvas.nodes.forEach((item) => {
+                            if (item.title === tableTitle) {
+                                idMap[item.id] = true;
+                            }
+                        });
 
-                    module.associations = module.associations.filter((item) => {
-                        return (item.from.entity !== tableTitle || item.from.field !== fieldName) && (item.to.entity !== tableTitle || item.to.field !== fieldName);
+                        relation.graphCanvas.edges = relation.graphCanvas.edges.filter((item) => {
+                            return !idMap[item.source] && !idMap[item.target];
+                        });
+
+                        relation.associations = relation.associations.filter((item) => {
+                            return (item.from.entity !== tableTitle || item.from.field !== fieldName) && (item.to.entity !== tableTitle || item.to.field !== fieldName);
+                        });
+
                     });
                 });
             },
@@ -1943,31 +2019,37 @@
                 let _this = this;
 
                 _this.projectData.modules.forEach((module) => {
+
                     let idMap = {};
 
-                    module.graphCanvas.nodes.forEach((item) => {
-                        if (item.title === tableTitle) {
-                            idMap[item.id] = true;
-                        }
+                    module.relations.forEach((relation) => {
+
+                        relation.graphCanvas.nodes.forEach((item) => {
+                            if (item.title === tableTitle) {
+                                idMap[item.id] = true;
+                            }
+                        });
+
+                        relation.graphCanvas.edges.forEach((item) => {
+                            if (idMap[item.source]) {
+                                if ((item.sourceAnchor == oldFieldIndex * 2) || (item.sourceAnchor == oldFieldIndex * 2 + 1)) {
+                                    item.sourceAnchor = (newFieldIndex * 2) + (item.sourceAnchor % 2);
+                                } else if ((item.sourceAnchor == newFieldIndex * 2) || (item.sourceAnchor == newFieldIndex * 2 + 1)) {
+                                    item.sourceAnchor = (oldFieldIndex * 2) + (item.sourceAnchor % 2);
+                                }
+                            }
+
+                            if (idMap[item.target]) {
+                                if ((item.targetAnchor == oldFieldIndex * 2) || (item.targetAnchor == oldFieldIndex * 2 + 1)) {
+                                    item.targetAnchor = (newFieldIndex * 2) + (item.targetAnchor % 2);
+                                } else if ((item.targetAnchor == newFieldIndex * 2) || (item.targetAnchor == newFieldIndex * 2 + 1)) {
+                                    item.targetAnchor = (oldFieldIndex * 2) + (item.targetAnchor % 2);
+                                }
+                            }
+                        });
+
                     });
 
-                    module.graphCanvas.edges.forEach((item) => {
-                        if (idMap[item.source]) {
-                            if ((item.sourceAnchor == oldFieldIndex * 2) || (item.sourceAnchor == oldFieldIndex * 2 + 1)) {
-                                item.sourceAnchor = (newFieldIndex * 2) + (item.sourceAnchor % 2);
-                            } else if ((item.sourceAnchor == newFieldIndex * 2) || (item.sourceAnchor == newFieldIndex * 2 + 1)) {
-                                item.sourceAnchor = (oldFieldIndex * 2) + (item.sourceAnchor % 2);
-                            }
-                        }
-
-                        if (idMap[item.target]) {
-                            if ((item.targetAnchor == oldFieldIndex * 2) || (item.targetAnchor == oldFieldIndex * 2 + 1)) {
-                                item.targetAnchor = (newFieldIndex * 2) + (item.targetAnchor % 2);
-                            } else if ((item.targetAnchor == newFieldIndex * 2) || (item.targetAnchor == newFieldIndex * 2 + 1)) {
-                                item.targetAnchor = (oldFieldIndex * 2) + (item.targetAnchor % 2);
-                            }
-                        }
-                    });
                 });
             },
             handleEntityTabChange (curTab) {
@@ -2024,11 +2106,17 @@
                     _this.projectData.modules[targetModuleIndex].entities.push(deepClone(sourceEntity));
 
                     _this.projectData.modules.forEach((module) => {
-                        module.graphCanvas.nodes.forEach((node) => {
-                            if (node.title == sourceEntity.title) {
-                                node.moduleName = _this.projectData.modules[targetModuleIndex].name;
-                            }
+
+                        module.relations.forEach((relation) => {
+
+                            relation.graphCanvas.nodes.forEach((item) => {
+                                if (item.title == sourceEntity.title) {
+                                    item.moduleName = _this.projectData.modules[targetModuleIndex].name;
+                                }
+                            });
+
                         });
+
                     });
 
                     let sourceTreeItem = _this.modulesTreeData[sourceModuleIndex].children[1].children.splice(sourceEntityIndex, 1)[0];
@@ -2165,9 +2253,18 @@
                     children: [
                         {
                             label: '关系图',
-                            nodeType: 2,
+                            nodeType: 1,
                             contextMenuType: 'relation',
-                            children: []
+                            children: module.relations.map((relation) => {
+                                return {
+                                    label: relation.chnname ? `${relation.title}[${relation.chnname}]` : relation.title,
+                                    pasteTarget: 'relation',
+                                    orgObj: relation,
+                                    nodeType: 2,
+                                    contextMenuType: 'relationItem',
+                                    children: []
+                                };
+                            })
                         },
                         {
                             label: '数据表',
@@ -2217,7 +2314,7 @@
                             pasteTarget: 'dataBase',
                             orgObj: item,
                             nodeType: 5,
-                            contextMenuType: 'other',
+                            contextMenuType: 'dataBaseItem',
                             children: []
                         }
                     })

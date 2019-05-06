@@ -572,6 +572,10 @@
                         key = '',
                         curEntity = newVal;
 
+                    if (!curEntity) {
+                        return;
+                    }
+
                     curEntity.fields.forEach((item) => {
                         for (key in _this.fieldConfig) {
                             item[key] = item[key] === undefined ? _this.fieldConfig[key].defaultValue : item[key];

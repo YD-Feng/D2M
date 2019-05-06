@@ -1,6 +1,6 @@
 <template>
-    <div class="tab-win-cont relative" style="padding: 0;">
-        <div :id="`J-paint-${moduleIndex}`"
+    <div v-if="curRelation" class="tab-win-cont relative" style="padding: 0;">
+        <div :id="`J-paint-${curRelation.title}`"
              ref="paint"
              v-auto-height data-del-height="84"
              @dragover="handleDragOver"
@@ -35,10 +35,10 @@
 
     module.exports = {
         replace: true,
-        props: ['value', 'projectData', 'moduleIndex'],
+        props: ['value', 'projectData'],
         data () {
             return {
-                curModule: null,
+                curRelation: null,
                 initFlag: false,
 
                 net: null,
@@ -78,20 +78,12 @@
         watch: {
             value: {
                 handler (newVal, oldVal) {
-                    let _this = this;
-
-                    _this.curModule = newVal;
-
-                    _this.$nextTick(() => {
-                        if (!_this.net) {
-                            _this.init();
-                        }
-                    });
+                    this.curRelation = newVal;
                 },
                 deep: true,
                 immediate: true
             },
-            curModule: {
+            curRelation: {
                 handler (newVal, oldVal) {
                     this.$emit('update:value', newVal);
                 },
@@ -104,13 +96,15 @@
 
                 if (!_this.net) {
                     _this.init();
-                }
+                } else {
+                    _this.net.changeData(_this.curRelation.graphCanvas.nodes, _this.curRelation.graphCanvas.edges);
 
-                if (matrix) {
-                    //如果是切换窗口操作，而不是新开窗口，则还原到切换窗口前的关系图展示位置
-                    _this.net.updateMatrix(matrix);
-                    _this.netScale = _this.net.getScale();
-                    _this.net.refresh();
+                    if (matrix) {
+                        //如果是切换窗口操作，而不是新开窗口，则还原到切换窗口前的关系图展示位置
+                        _this.net.updateMatrix(matrix);
+                        _this.netScale = _this.net.getScale();
+                        _this.net.refresh();
+                    }
                 }
             },
 
@@ -122,9 +116,9 @@
             getAssociations (source) {
                 let _this = this;
 
-                _this.curModule.graphCanvas = source;
+                _this.curRelation.graphCanvas = source;
 
-                _this.curModule.associations = source.edges.map((edge) => {
+                _this.curRelation.associations = source.edges.map((edge) => {
                     let sourceNode = source.nodes.filter((node) => {
                             return node.id == edge.source;
                         })[0],
@@ -160,7 +154,7 @@
                 _this.registerNode();
 
                 _this.net = new G6.Net({
-                    id: `J-paint-${_this.moduleIndex}`,
+                    id: `J-paint-${_this.curRelation.title}`,
                     width: _this.$refs.paint.clientWidth,
                     height: _this.$refs.paint.clientHeight,
                     mode: 'edit',
@@ -201,7 +195,7 @@
                 });
 
                 _this.bindNetEvent();
-                _this.net.source(_this.curModule.graphCanvas.nodes, _this.curModule.graphCanvas.edges);
+                _this.net.source(_this.curRelation.graphCanvas.nodes, _this.curRelation.graphCanvas.edges);
                 _this.net.render();
             },
             //注册节点
@@ -223,7 +217,7 @@
                                 return entity.title === model.title;
                             })[0],
 
-                            tableFromAssociations = _this.curModule.associations.filter((item) => {
+                            tableFromAssociations = _this.curRelation.associations.filter((item) => {
                                 return item.to && item.from.entity === table.title
                             }),
 
@@ -581,7 +575,7 @@
                             }
 
                             let source = _this.net.save().source;
-                            _this.curModule.graphCanvas = source;
+                            _this.curRelation.graphCanvas = source;
                         });
                     }
                 });
@@ -648,10 +642,10 @@
             }
         },
         created () {
-            window.rdVmCache[this.moduleIndex] = this;
+            window.rdVmCache[this.curRelation.title] = this;
         },
         destroyed () {
-            delete window.rdVmCache[this.moduleIndex];
+            delete window.rdVmCache[this.curRelation.title];
         }
     };
 </script>

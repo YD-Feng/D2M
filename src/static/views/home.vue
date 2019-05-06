@@ -443,11 +443,7 @@
                         chnname: '数据库',
                         remark: '',
                         entities: [],
-                        graphCanvas: {
-                            nodes: [],
-                            edges: []
-                        },
-                        associations: []
+                        relations: []
                     },
                     dataTypeDomains = deepClone(defaultData.profile.defaultDataTypeDomains);
 
