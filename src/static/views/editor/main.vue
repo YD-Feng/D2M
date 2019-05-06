@@ -909,7 +909,7 @@
                 });
             },
 
-            //新增（模块、数据表、数据类型、数据库）
+            //新增（模块、关系图、数据表、数据类型）
             doNew () {
                 let _this = this,
                     dialogConfig = {
@@ -1013,7 +1013,7 @@
                 _this.contextMenuDialog = obj;
             },
 
-            //拷贝（模块、数据表、数据类型、数据库）
+            //拷贝（模块、数据表、数据类型）
             doCopy () {
                 let _this = this;
 
@@ -1110,21 +1110,15 @@
                 }
             },
 
-            //删除（模块、数据表、数据类型、数据库）
+            //删除（模块、数据表、数据类型）
             doDelete () {
                 let _this = this,
                     moduleIndex = _this.contextMenu.moduleIndex,
                     relationIndex = _this.contextMenu.relationIndex,
                     entityIndex = _this.contextMenu.entityIndex,
                     dataTypeIndex = _this.contextMenu.dataTypeIndex,
-                    dataBaseIndex = _this.contextMenu.dataBaseIndex,
                     filterFn = null,
                     count = 0;
-
-                if (dataBaseIndex < 2) {
-                    _this.$message.error('MYSQL 和 ORACLE 两个默认数据库不允许删除');
-                    return;
-                }
 
                 _this.$confirm('删除后将不可恢复，确定删除？', '提示', {
                     customClass: 'cm-confirm-box',
@@ -1342,7 +1336,7 @@
                 this.curTabIndex = 0;
             },
 
-            //提交信息（模块、数据表、数据类型、数据库 的 新建 与 重命名）
+            //提交信息（模块、关系图、数据表、数据类型 的 新建 与 重命名）
             handleDialogSubmit () {
                 let _this = this,
                     type = _this.contextMenuDialog.type,
