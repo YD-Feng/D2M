@@ -90,7 +90,6 @@
                             :data="modulesTreeData"
                             :props="treeProps"
                             :render-after-expand="false"
-                            :default-expand-all="true"
                             empty-text="暂无模块，在此处点击右键新建模块"
                             @node-expand="toggleTreeFlag"
                             @node-collapse="toggleTreeFlag"
