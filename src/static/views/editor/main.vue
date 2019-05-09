@@ -523,7 +523,7 @@
 <script>
     import electron from 'electron';
     import path from 'path';
-    import { saveFileSync, ensureDirectoryExistence, getFilesByDirSync, readFilePromise, fileExist } from './../../js/utils/fs';
+    import { saveFileSync, saveFilePromise, ensureDirectoryExistence, getFilesByDirSync, readFilePromise, fileExist } from './../../js/utils/fs';
     import { checkVersionData } from './../../js/utils/project-version';
     import deepClone from './../../js/utils/deep-clone';
     import defaultData from './../../js/utils/default-data';
