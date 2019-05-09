@@ -451,6 +451,12 @@
                             _this.getAssociations(source);
                             _this.net.changeData(source.nodes, source.edges);
                         }, 0);
+                    } else {
+                        setTimeout(() => {
+                            _this.net.undo();
+                            _this.net.updateRollback();
+                            _this.$message.warning('连接线添加失败，只能在锚点与锚点之间建立连接线');
+                        });
                     }
                 });
 

@@ -70,7 +70,9 @@
                 </li>
             </ul>
             <div class="title" v-show="curSideBar.type != ''">
-                <div class="fl">{{curSideBar.name}}</div>
+                <div class="fl">
+                    {{curSideBar.name}}
+                </div>
                 <div class="fr">
                     <i class="icon-font icon-shouqi"
                        @click="handleChangeSideBar()">
