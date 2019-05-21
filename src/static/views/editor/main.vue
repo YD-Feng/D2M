@@ -715,6 +715,18 @@
                 return Math.floor(100 / (this.tabWinList.length || 1)) + '%';
             }
         },
+        watch: {
+            'curSideBar.type': function (newVal, oldVal) {
+                let _this = this;
+                if (newVal === '' || oldVal === '') {
+                    _this.$nextTick(() => {
+                        if (_this.tabWinList.length > 0 && _this.tabWinList[_this.curTabIndex].type == 2) {
+                            _this.$refs[`tabWin-${_this.curTabIndex}`][0].changeNetSize();
+                        }
+                    });
+                }
+            }
+        },
         methods: {
             handleBackToHome () {
                 this.$router.push({
