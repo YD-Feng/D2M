@@ -812,7 +812,7 @@
                 if (row.remark == '') {
                     //务必先缓存输入框dom对象
                     let target = e.currentTarget;
-                    row.remark = row.name;
+                    row.remark = row.chnname;
                     this.$nextTick(() => {
                         target.select();
                     });
