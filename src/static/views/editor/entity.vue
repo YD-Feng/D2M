@@ -191,7 +191,8 @@
                         <el-input
                             v-model.trim="item.remark"
                             :placeholder="`请输入${fieldConfig.remark.label}`"
-                            style="width: 100%;">
+                            style="width: 100%;"
+                            @focus="handleAutoRemark($event, item)">
                         </el-input>
                     </div>
 
@@ -242,62 +243,74 @@
         </div>
 
         <!--索引信息-->
-        <div class="mt10px pt10px pb10px"
+        <div class="mt10px pt10px pb10px oh"
              style="border-top: 1px solid #e2e2e2;"
              v-show="curTab == 3">
-            <el-button
-                type="primary"
-                plain
-                style="padding: 4px 5px;"
-                title="新增索引"
-                @click="addIndex($event)">
-                <i class="el-icon-circle-plus-outline" style="font-size: 16px;"></i>
-            </el-button>
+            <div class="fl">
+                <el-button
+                    type="primary"
+                    plain
+                    style="padding: 4px 5px;"
+                    title="新增索引"
+                    @click="addIndex($event)">
+                    <i class="el-icon-circle-plus-outline" style="font-size: 16px;"></i>
+                </el-button>
 
-            <el-button
-                type="primary"
-                plain
-                style="padding: 4px 5px;"
-                title="在选中索引前插入新索引"
-                @click="addIndexAt($event, 'front')">
-                <i class="icon-font icon-qiancha"></i>
-            </el-button>
+                <el-button
+                    type="primary"
+                    plain
+                    style="padding: 4px 5px;"
+                    title="在选中索引前插入新索引"
+                    @click="addIndexAt($event, 'front')">
+                    <i class="icon-font icon-qiancha"></i>
+                </el-button>
 
-            <el-button
-                type="primary"
-                plain
-                style="padding: 4px 5px;"
-                title="在选中索引后插入新索引"
-                @click="addIndexAt($event, 'behind')">
-                <i class="icon-font icon-houcha"></i>
-            </el-button>
+                <el-button
+                    type="primary"
+                    plain
+                    style="padding: 4px 5px;"
+                    title="在选中索引后插入新索引"
+                    @click="addIndexAt($event, 'behind')">
+                    <i class="icon-font icon-houcha"></i>
+                </el-button>
 
-            <el-button
-                type="primary"
-                plain
-                style="padding: 4px 5px;"
-                title="选中索引上移"
-                @click="handleSort($event, 'index', 'front')">
-                <i class="el-icon-upload2" style="font-size: 16px;"></i>
-            </el-button>
+                <el-button
+                    type="primary"
+                    plain
+                    style="padding: 4px 5px;"
+                    title="选中索引上移"
+                    @click="handleSort($event, 'index', 'front')">
+                    <i class="el-icon-upload2" style="font-size: 16px;"></i>
+                </el-button>
 
-            <el-button
-                type="primary"
-                plain
-                style="padding: 4px 5px;"
-                title="选中索引下移"
-                @click="handleSort($event, 'index', 'behind')">
-                <i class="el-icon-download" style="font-size: 16px;"></i>
-            </el-button>
+                <el-button
+                    type="primary"
+                    plain
+                    style="padding: 4px 5px;"
+                    title="选中索引下移"
+                    @click="handleSort($event, 'index', 'behind')">
+                    <i class="el-icon-download" style="font-size: 16px;"></i>
+                </el-button>
 
-            <el-button
-                type="primary"
-                plain
-                style="padding: 4px 5px;"
-                title="删除选中索引"
-                @click="delIndex($event)">
-                <i class="el-icon-delete" style="font-size: 16px;"></i>
-            </el-button>
+                <el-button
+                    type="primary"
+                    plain
+                    style="padding: 4px 5px;"
+                    title="删除选中索引"
+                    @click="delIndex($event)">
+                    <i class="el-icon-delete" style="font-size: 16px;"></i>
+                </el-button>
+            </div>
+
+            <div class="fr" style="position: relative; top: 8px;">
+                自动生成索引名
+                <el-switch
+                    style="position: relative; top: -2px;"
+                    v-model="autoIndexNameFlag"
+                    active-color="#0095f9"
+                    inactive-color="#ff4949">
+                </el-switch>
+            </div>
         </div>
 
         <el-table
@@ -338,7 +351,8 @@
                 width="120">
                 <template slot-scope="scope">
                     <el-checkbox
-                        v-model="scope.row.isUnique">
+                        v-model="scope.row.isUnique"
+                        @change="handleIndexIsUniqueChange(scope.row)">
                     </el-checkbox>
                 </template>
             </el-table-column>
@@ -353,7 +367,8 @@
                         filterable
                         v-model="scope.row.fields"
                         :placeholder="请选择索引字段"
-                        style="width: 100%;">
+                        style="width: 100%;"
+                        @change="handleIndexFieldChange(scope.row)">
                         <el-option
                             v-for="item in curEntity.fields"
                             :key="item.name"
@@ -443,6 +458,7 @@
             return {
                 curEntity: null,
                 refreshFlag: false,
+                autoIndexNameFlag: true,
 
                 checkedField: [],
                 checkedIndex: [],
@@ -790,6 +806,55 @@
                 if (_this[type].length != 0) {
                     _this[type] = [index.toString()];
                 }
+            },
+
+            handleAutoRemark (e, row) {
+                if (row.remark == '') {
+                    //务必先缓存输入框dom对象
+                    let target = e.currentTarget;
+                    row.remark = row.name;
+                    this.$nextTick(() => {
+                        target.select();
+                    });
+                }
+            },
+
+            handleIndexIsUniqueChange (row) {
+                if (!this.autoIndexNameFlag) {
+                    return;
+                }
+
+                if (row.name != '') {
+                    if (row.isUnique) {
+                        row.name = row.name.replace(/^idx\_/, 'uk_');
+                    } else {
+                        row.name = row.name.replace(/^uk\_/, 'idx_');
+                    }
+                }
+            },
+            handleIndexFieldChange (row) {
+                if (!this.autoIndexNameFlag) {
+                    return;
+                }
+
+                if (row.fields.length == 0) {
+                    row.name = '';
+                } else {
+
+                    let arr = row.fields.map((fieldName) => {
+                        return this.toHump(fieldName);
+                    });
+
+                    arr.unshift(row.isUnique ? 'uk' : 'idx');
+
+                    row.name = arr.join('_');
+
+                }
+            },
+            toHump (str) {
+                return str.replace(/\_(\w)/g, (all, letter) => {
+                    return letter.toUpperCase();
+                });
             },
 
             getCode () {
